@@ -122,7 +122,6 @@ st.plotly_chart(fig)
 # Get advanced box score stats for the current season
 boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(player_id=player_id, season=current_season)
 boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
-
 # Summarize advanced stats
 advanced_stats = boxscore_advanced_stats[['GAME_ID', 'GAME_DATE', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
 advanced_stats['GAME_DATE'] = pd.to_datetime(advanced_stats['GAME_DATE'])
