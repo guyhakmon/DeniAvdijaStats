@@ -79,13 +79,7 @@ else:
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
 st.subheader("React to Last Game Stats")
 name = st.text_input("Enter your name")
-# picture = st.camera_input("Take a picture")
-# if picture:
-#     st.image(picture, caption=f"{name}'s picture", use_container_width=True)
-#     st.success("Photo uploaded successfully!")
-#     st.progress(100)
-# else:
-#     st.progress(0)
+
 
 reaction = st.slider("Rate Deni Avdija's performance in the last game (1-5 stars)", 1, 5, 3)
 comment = st.text_area("Leave a comment about the performance")
@@ -114,11 +108,7 @@ if st.button("Submit Reaction"):
         with open(filename, "a", encoding="utf-8") as f:
             f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
         
-        # Save the picture with a unique filename
-        # if picture:
-        #     picture_filename = f"{name}_{game_date_str}.png"
-        #     with open(picture_filename, "wb") as f:
-        #         f.write(picture.getvalue())
+    ghfgh
         
         st.success("Your reaction has been saved!")
 
@@ -151,10 +141,6 @@ if st.button("Submit Reaction"):
                 st.markdown(f"**Rating:** {'🌟' * reaction['rating']}")
             if 'comment' in reaction:
                 st.markdown(f"**Comment:** {reaction['comment']}")
-            # Load and display the picture
-            # picture_filename = f"{reaction['name']}_{game_date_str}.png"
-            # if os.path.exists(picture_filename):
-            #     st.image(picture_filename, caption=f"{reaction['name']}'s picture", use_container_width=True)
             st.markdown("---")
         if reactions:
             average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
