@@ -9,7 +9,7 @@ import pandas as pd
 st.title("Deni Avdija's NBA Stats")
 
 # Add a photo of Deni Avdija
-st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", use_column_width=True)
+st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", use_column_width=False)
 
 # Find player ID for Deni Avdija
 player_dict = players.find_players_by_full_name("Deni Avdija")
