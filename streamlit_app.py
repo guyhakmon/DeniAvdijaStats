@@ -122,10 +122,12 @@ st.plotly_chart(fig)
 # Get advanced box score stats for the current season
 # Get advanced box score stats for each game in the current season
 advanced_stats_list = []
-for game_id in gamelog_stats['Game_Number']:
+for game_id in gamelog_stats['Game_ID']:
     boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(game_id=game_id)
     boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
-    player_stats = boxscore_advanced_stats[boxscore_advanced_stats['PLAYER_ID'] == player_id]
+    player_stats = boxscore_advanced_stats[boxscore_advanced_stats['PLAYER_ID'] == player_id][['GAME_ID', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
+    player_stats['Game_ID'] = game_id
+    player_stats = player_stats.merge(gamelog_stats[['Game_ID', 'GAME_DATE']], on='Game_ID')
     advanced_stats_list.append(player_stats)
 
 # Combine all advanced stats into a single DataFrame
@@ -149,19 +151,4 @@ fig = go.Figure()
 fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['USG_PCT'], mode='lines+markers', name='Usage Percentage', line=dict(color='purple')))
 fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['TS_PCT'], mode='lines+markers', name='True Shooting Percentage', line=dict(color='orange')))
 fig.update_layout(title='Usage Percentage and True Shooting Percentage Over the Season', xaxis_title='Game Date', yaxis_title='Percentage')
-st.plotly_chart(fig)
-
-# Calculate opponent field goal attempts (Opp FGA) from advanced box score stats
-advanced_stats['Opp_FGA'] = boxscore_advanced_stats['OPP_FGA']
-
-# Calculate cumulative Opp FGA after each game
-advanced_stats['Cumulative_Opp_FGA'] = advanced_stats['Opp_FGA'].cumsum()
-# Calculate Opp FGA per game (Opp FGA PG) after each game
-advanced_stats['Opp_FGA_PG'] = advanced_stats['Cumulative_Opp_FGA'] / range(1, len(advanced_stats) + 1)
-
-# Plot Opp FGA progress over the season
-st.write("Opponent Field Goal Attempts (Opp FGA) Progress Over the Season")
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['Opp_FGA_PG'], mode='lines+markers', name='Opp FGA Progress', line=dict(color='brown')))
-fig.update_layout(title='Opponent Field Goal Attempts (Opp FGA) Progress Over the Season', xaxis_title='Game Date', yaxis_title='Opp FGA Per Game')
 st.plotly_chart(fig)
