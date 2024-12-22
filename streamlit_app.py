@@ -118,37 +118,3 @@ fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_s
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['BPG'], mode='lines+markers', name='BPG Progress', line=dict(color='purple')))
 fig.update_layout(title='SPG and BPG Progress Over the Season', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
-
-# Get advanced box score stats for the current season
-# Get advanced box score stats for each game in the current season
-advanced_stats_list = []
-for game_id in gamelog_stats['Game_ID']:
-    boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(game_id=game_id)
-    boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
-    player_stats = boxscore_advanced_stats[boxscore_advanced_stats['PLAYER_ID'] == player_id][['GAME_ID', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
-    player_stats['Game_ID'] = game_id
-    player_stats = player_stats.merge(gamelog_stats[['Game_ID', 'GAME_DATE']], on='Game_ID')
-    advanced_stats_list.append(player_stats)
-
-# Combine all advanced stats into a single DataFrame
-advanced_stats = pd.concat(advanced_stats_list, ignore_index=True)
-# Summarize advanced stats
-advanced_stats = advanced_stats[['GAME_ID', 'GAME_DATE', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
-advanced_stats['GAME_DATE'] = pd.to_datetime(advanced_stats['GAME_DATE'])
-
-# Plot Offensive Rating, Defensive Rating, and Net Rating over the season
-st.write("Offensive Rating, Defensive Rating, and Net Rating Over the Season")
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['OFF_RATING'], mode='lines+markers', name='Offensive Rating', line=dict(color='green')))
-fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['DEF_RATING'], mode='lines+markers', name='Defensive Rating', line=dict(color='red')))
-fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['NET_RATING'], mode='lines+markers', name='Net Rating', line=dict(color='blue')))
-fig.update_layout(title='Offensive, Defensive, and Net Rating Over the Season', xaxis_title='Game Date', yaxis_title='Rating')
-st.plotly_chart(fig)
-
-# Plot Usage Percentage and True Shooting Percentage over the season
-st.write("Usage Percentage and True Shooting Percentage Over the Season")
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['USG_PCT'], mode='lines+markers', name='Usage Percentage', line=dict(color='purple')))
-fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['TS_PCT'], mode='lines+markers', name='True Shooting Percentage', line=dict(color='orange')))
-fig.update_layout(title='Usage Percentage and True Shooting Percentage Over the Season', xaxis_title='Game Date', yaxis_title='Percentage')
-st.plotly_chart(fig)
