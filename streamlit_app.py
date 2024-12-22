@@ -6,6 +6,7 @@ from nba_api.stats.endpoints import playercareerstats, playergamelog
 from nba_api.stats.static import players
 import plotly.graph_objects as go
 import pandas as pd
+from pytube import Search
 
 # Streamlit app title
 st.title("Deni Avdija's NBA Stats")
@@ -35,6 +36,8 @@ filename = f"reactions_{game_date_str}.txt"
 
 # Check if the file already exists
 import os
+import requests
+from bs4 import BeautifulSoup
 if not os.path.exists(filename):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(f"Reactions for the game on {last_game_date}\n\n")
@@ -50,6 +53,25 @@ st.markdown(f"**Steals:** {last_game_stats['STL']}")
 st.markdown(f"**Blocks:** {last_game_stats['BLK']}")
 st.markdown(f"**Field Goal Percentage:** {last_game_stats['FG_PCT'] * 100:.2f}%")
 st.markdown(f"**Three-Point Percentage:** {last_game_stats['FG3_PCT'] * 100:.2f}%")
+
+# Format the search keywords for the highlights video
+search_keywords = f"Deni Avdija {last_game_date}"
+
+# Search for the highlights video on YouTube
+search = Search(search_keywords)
+video = search.results[0] if search.results else None
+
+if video:
+    video_url = video.watch_url
+    video_thumbnail = video.thumbnail_url
+    st.markdown(f"""
+        <h3 style="text-align:center; color:#FF6347;">Watch Deni Avdija's Highlights from {last_game_date}</h3>
+        <a href="{video_url}" target="_blank">
+            <img src="{video_thumbnail}" alt="Watch Deni Avdija's highlights from the game on {last_game_date}" style="width:80%; border-radius:10px;">
+        </a>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("Highlights not available yet.")
 
 # Calculate and display the average rating
 if os.path.exists(filename):
