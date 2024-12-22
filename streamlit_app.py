@@ -120,10 +120,18 @@ fig.update_layout(title='SPG and BPG Progress Over the Season', xaxis_title='Gam
 st.plotly_chart(fig)
 
 # Get advanced box score stats for the current season
-boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(player_id=player_id, season=current_season)
-boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
+# Get advanced box score stats for each game in the current season
+advanced_stats_list = []
+for game_id in gamelog_stats['GAME_ID']:
+    boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(game_id=game_id)
+    boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
+    player_stats = boxscore_advanced_stats[boxscore_advanced_stats['PLAYER_ID'] == player_id]
+    advanced_stats_list.append(player_stats)
+
+# Combine all advanced stats into a single DataFrame
+advanced_stats = pd.concat(advanced_stats_list, ignore_index=True)
 # Summarize advanced stats
-advanced_stats = boxscore_advanced_stats[['GAME_ID', 'GAME_DATE', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
+advanced_stats = advanced_stats[['GAME_ID', 'GAME_DATE', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
 advanced_stats['GAME_DATE'] = pd.to_datetime(advanced_stats['GAME_DATE'])
 
 # Plot Offensive Rating, Defensive Rating, and Net Rating over the season
