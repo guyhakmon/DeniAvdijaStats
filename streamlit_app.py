@@ -1,4 +1,7 @@
 import streamlit as st
+# Set the page configuration
+st.set_page_config(page_title='Deni Avdija Stats Tracker')
+
 from nba_api.stats.endpoints import playercareerstats, playergamelog
 from nba_api.stats.static import players
 import plotly.graph_objects as go
@@ -111,8 +114,11 @@ if st.button("Submit Reaction"):
         with open(filename, "a", encoding="utf-8") as f:
             f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
         
+        # Save the picture with a unique filename
         if picture:
-            st.image(picture, caption=f"{name}'s picture", use_container_width=True)
+            picture_filename = f"{name}_{game_date_str}.png"
+            with open(picture_filename, "wb") as f:
+                f.write(picture.getvalue())
         
         st.success("Your reaction has been saved!")
 
@@ -145,15 +151,16 @@ if st.button("Submit Reaction"):
                 st.markdown(f"**Rating:** {'🌟' * reaction['rating']}")
             if 'comment' in reaction:
                 st.markdown(f"**Comment:** {reaction['comment']}")
-            if picture:
-                st.image(picture, caption=f"{reaction['name']}'s picture", use_container_width=True)
+            # Load and display the picture
+            picture_filename = f"{reaction['name']}_{game_date_str}.png"
+            if os.path.exists(picture_filename):
+                st.image(picture_filename, caption=f"{reaction['name']}'s picture", use_column_width=True)
             st.markdown("---")
         if reactions:
             average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
             st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
         else:
             st.markdown("No reactions yet.")
-
 
 # Summarize stats
 summary_stats = career_stats[['SEASON_ID', 'GP', 'PTS', 'REB', 'AST', 'STL', 'BLK']]
