@@ -122,7 +122,7 @@ st.plotly_chart(fig)
 # Get advanced box score stats for the current season
 # Get advanced box score stats for each game in the current season
 advanced_stats_list = []
-for game_id in gamelog_stats['GAME_ID']:
+for game_id in gamelog_stats['Game_Number']:
     boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(game_id=game_id)
     boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
     player_stats = boxscore_advanced_stats[boxscore_advanced_stats['PLAYER_ID'] == player_id]
