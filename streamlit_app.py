@@ -29,7 +29,7 @@ gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=current_season
 gamelog_stats = gamelog.get_data_frames()[0]
 
 # Summarize current season stats
-current_season_stats = gamelog_stats[['GAME_DATE', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']]
+current_season_stats = gamelog_stats['GAME_DATE', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT','OPP_FGA', 'OPP_FGM']
 current_season_stats['GAME_DATE'] = pd.to_datetime(current_season_stats['GAME_DATE'])
 
 # Calculate cumulative points after each game
