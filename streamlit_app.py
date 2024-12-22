@@ -36,8 +36,6 @@ filename = f"reactions_{game_date_str}.txt"
 
 # Check if the file already exists
 import os
-import requests
-from bs4 import BeautifulSoup
 if not os.path.exists(filename):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(f"Reactions for the game on {last_game_date}\n\n")
