@@ -1,7 +1,8 @@
 import streamlit as st
 from nba_api.stats.endpoints import playercareerstats, playergamelog
 from nba_api.stats.static import players
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 import pandas as pd
 
 # Streamlit app title
@@ -53,30 +54,20 @@ current_season_stats['Cumulative_FG3_PCT'] = current_season_stats['FG3_PCT'].exp
 
 # Plot PPG, RPG, APG progress over the season
 st.write("PPG, RPG, APG Progress Over the Season")
-fig, ax = plt.subplots()
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['PPG'], marker='o', linestyle='-', color='g', label='PPG Progress')
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['RPG'], marker='o', linestyle='-', color='b', label='RPG Progress')
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['APG'], marker='o', linestyle='-', color='r', label='APG Progress')
-ax.set_xlabel('Game Date')
-ax.set_ylabel('Per Game Stats')
-ax.set_title('PPG, RPG, APG Progress Over the Season')
-ax.legend()
-ax.grid(True)
-ax.tick_params(axis='x', rotation=45)
-st.pyplot(fig)
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['PPG'], mode='lines+markers', name='PPG Progress', line=dict(color='green')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['RPG'], mode='lines+markers', name='RPG Progress', line=dict(color='blue')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['APG'], mode='lines+markers', name='APG Progress', line=dict(color='red')))
+fig.update_layout(title='PPG, RPG, APG Progress Over the Season', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+st.plotly_chart(fig)
 
 # Plot FG% and 3P% progress over the season
 st.write("FG% and 3P% Progress Over the Season")
-fig, ax = plt.subplots()
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['Cumulative_FG_PCT'], marker='o', linestyle='-', color='m', label='FG% Progress')
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['Cumulative_FG3_PCT'], marker='o', linestyle='-', color='c', label='3P% Progress')
-ax.set_xlabel('Game Date')
-ax.set_ylabel('Percentage')
-ax.set_title('FG% and 3P% Progress Over the Season')
-ax.legend()
-ax.grid(True)
-ax.tick_params(axis='x', rotation=45)
-st.pyplot(fig)
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Cumulative_FG_PCT'], mode='lines+markers', name='FG% Progress', line=dict(color='magenta')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Cumulative_FG3_PCT'], mode='lines+markers', name='3P% Progress', line=dict(color='cyan')))
+fig.update_layout(title='FG% and 3P% Progress Over the Season', xaxis_title='Game Date', yaxis_title='Percentage')
+st.plotly_chart(fig)
 
 # Calculate points from FT, 2FG, and 3FG
 current_season_stats['FT_PTS'] = gamelog_stats['FTM'] * 1
@@ -100,16 +91,11 @@ current_season_stats['3FG_PPG'] = current_season_stats['Cumulative_3FG_PTS'] / c
 
 # Plot points distribution
 st.write("Points Distribution from 2FG, 3FG, and FT Over the Season")
-fig, ax = plt.subplots()
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['2FG_PPG'], marker='o', linestyle='-', color='g', label='Points from 2FG Per Game')
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['3FG_PPG'], marker='o', linestyle='-', color='r', label='Points from 3FG Per Game')
-ax.plot(current_season_stats['GAME_DATE'], current_season_stats['FT_PPG'], marker='o', linestyle='-', color='b', label='Points from FT Per Game')
-ax.set_xlabel('Game Date')
-ax.set_ylabel('Points Per Game')
-ax.set_title('Points Distribution from 2FG, 3FG, and FT Over the Season')
-ax.legend()
-ax.grid(True)
-ax.tick_params(axis='x', rotation=45)
-st.pyplot(fig)
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['2FG_PPG'], mode='lines+markers', name='Points from 2FG Per Game', line=dict(color='green')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['3FG_PPG'], mode='lines+markers', name='Points from 3FG Per Game', line=dict(color='red')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['FT_PPG'], mode='lines+markers', name='Points from FT Per Game', line=dict(color='blue')))
+fig.update_layout(title='Points Distribution from 2FG, 3FG, and FT Over the Season', xaxis_title='Game Date', yaxis_title='Points Per Game')
+st.plotly_chart(fig)
 
 
