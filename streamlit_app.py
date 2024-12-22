@@ -99,7 +99,7 @@ else:
     st.markdown("No reactions yet.")
 
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
-st.subheader("React to Last Game Stats")
+st.subheader("React to The Last Game")
 name = st.text_input("Enter your name")
 
 
