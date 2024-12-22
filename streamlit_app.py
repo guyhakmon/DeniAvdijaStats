@@ -8,6 +8,9 @@ import pandas as pd
 # Streamlit app title
 st.title("Deni Avdija's NBA Stats")
 
+# Add a photo of Deni Avdija
+st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", use_column_width=True)
+
 # Find player ID for Deni Avdija
 player_dict = players.find_players_by_full_name("Deni Avdija")
 player_id = player_dict[0]['id']
@@ -17,7 +20,7 @@ career = playercareerstats.PlayerCareerStats(player_id=player_id)
 career_stats = career.get_data_frames()[0]
 
 # Summarize stats
-summary_stats = career_stats[['SEASON_ID', 'PTS', 'REB', 'AST', 'STL', 'BLK']]
+summary_stats = career_stats[['SEASON_ID', 'GP', 'PTS', 'REB', 'AST', 'STL', 'BLK']]
 st.write("Career Summary Stats")
 st.dataframe(summary_stats)
 
