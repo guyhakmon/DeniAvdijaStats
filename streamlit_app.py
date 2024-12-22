@@ -160,11 +160,6 @@ if st.button("Submit Reaction"):
             if 'comment' in reaction:
                 st.markdown(f"**Comment:** {reaction['comment']}")
             st.markdown("---")
-        if reactions:
-            average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
-            st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
-        else:
-            st.markdown("No reactions yet.")
 
 # Summarize stats
 summary_stats = career_stats[['SEASON_ID', 'GP', 'PTS', 'REB', 'AST', 'STL', 'BLK']]
