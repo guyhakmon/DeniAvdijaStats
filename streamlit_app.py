@@ -1,8 +1,6 @@
 import streamlit as st
 from nba_api.stats.endpoints import playercareerstats, playergamelog
 from nba_api.stats.static import players
-from nba_api.stats.endpoints import boxscoreadvancedv2
-import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 
@@ -139,7 +137,6 @@ if st.button("Submit Reaction"):
 
         # Limit to the last 5 reactions
         reactions = reactions[-5:]
-
         # Display each reaction
         for reaction in reactions:
             if 'name' in reaction:
@@ -148,9 +145,9 @@ if st.button("Submit Reaction"):
                 st.markdown(f"**Rating:** {'🌟' * reaction['rating']}")
             if 'comment' in reaction:
                 st.markdown(f"**Comment:** {reaction['comment']}")
+            if picture:
+                st.image(picture, caption=f"{reaction['name']}'s picture", use_container_width=True)
             st.markdown("---")
-
-        # Calculate and display the average rating
         if reactions:
             average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
             st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
