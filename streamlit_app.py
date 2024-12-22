@@ -154,7 +154,7 @@ if st.button("Submit Reaction"):
             # Load and display the picture
             picture_filename = f"{reaction['name']}_{game_date_str}.png"
             if os.path.exists(picture_filename):
-                st.image(picture_filename, caption=f"{reaction['name']}'s picture", use_column_width=True)
+                st.image(picture_filename, caption=f"{reaction['name']}'s picture", use_container_width=True)
             st.markdown("---")
         if reactions:
             average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
