@@ -108,8 +108,6 @@ if st.button("Submit Reaction"):
         with open(filename, "a", encoding="utf-8") as f:
             f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
         
-    ghfgh
-        
         st.success("Your reaction has been saved!")
 
         # Display Last 5 Reactions and the average rating
@@ -247,3 +245,43 @@ fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_s
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['BPG'], mode='lines+markers', name='BPG Progress', line=dict(color='purple')))
 fig.update_layout(title='SPG and BPG Progress Over the Season', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
+
+
+# Calculate rolling average for PPG, RPG, APG with a window of 5 games
+current_season_stats['Rolling_PPG'] = current_season_stats['PTS'].rolling(window=5).mean()
+current_season_stats['Rolling_RPG'] = current_season_stats['REB'].rolling(window=5).mean()
+current_season_stats['Rolling_APG'] = current_season_stats['AST'].rolling(window=5).mean()
+
+# Plot rolling average PPG, RPG, APG progress over the season
+st.write("Rolling Average PPG, RPG, APG Progress Over the Season (5 Games)")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_PPG'], mode='lines+markers', name='Rolling PPG', line=dict(color='green')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_RPG'], mode='lines+markers', name='Rolling RPG', line=dict(color='blue')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_APG'], mode='lines+markers', name='Rolling APG', line=dict(color='red')))
+fig.update_layout(title='Rolling Average PPG, RPG, APG Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+st.plotly_chart(fig)
+
+# Calculate rolling average FG% and 3P% with a window of 5 games
+current_season_stats['Rolling_FG_PCT'] = current_season_stats['FG_PCT'].rolling(window=5).mean()
+current_season_stats['Rolling_FG3_PCT'] = current_season_stats['FG3_PCT'].rolling(window=5).mean()
+
+# Plot rolling average FG% and 3P% progress over the season
+st.write("Rolling Average FG% and 3P% Progress Over the Season (5 Games)")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_FG_PCT'], mode='lines+markers', name='Rolling FG%', line=dict(color='magenta')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_FG3_PCT'], mode='lines+markers', name='Rolling 3P%', line=dict(color='cyan')))
+fig.update_layout(title='Rolling Average FG% and 3P% Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Percentage')
+st.plotly_chart(fig)
+
+# Calculate rolling average SPG and BPG with a window of 5 games
+current_season_stats['Rolling_SPG'] = current_season_stats['STL'].rolling(window=5).mean()
+current_season_stats['Rolling_BPG'] = current_season_stats['BLK'].rolling(window=5).mean()
+
+# Plot rolling average SPG and BPG progress over the season
+st.write("Rolling Average SPG and BPG Progress Over the Season (5 Games)")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_SPG'], mode='lines+markers', name='Rolling SPG', line=dict(color='orange')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_BPG'], mode='lines+markers', name='Rolling BPG', line=dict(color='purple')))
+fig.update_layout(title='Rolling Average SPG and BPG Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+st.plotly_chart(fig)
+
