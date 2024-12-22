@@ -1,6 +1,7 @@
 import streamlit as st
 from nba_api.stats.endpoints import playercareerstats, playergamelog
 from nba_api.stats.static import players
+from nba_api.stats.endpoints import boxscoreadvancedv2
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
@@ -116,4 +117,44 @@ fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['SPG'], mode='lines+markers', name='SPG Progress', line=dict(color='orange')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['BPG'], mode='lines+markers', name='BPG Progress', line=dict(color='purple')))
 fig.update_layout(title='SPG and BPG Progress Over the Season', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+st.plotly_chart(fig)
+
+# Get advanced box score stats for the current season
+boxscore_advanced = boxscoreadvancedv2.BoxScoreAdvancedV2(player_id=player_id, season=current_season)
+boxscore_advanced_stats = boxscore_advanced.get_data_frames()[0]
+
+# Summarize advanced stats
+advanced_stats = boxscore_advanced_stats[['GAME_ID', 'GAME_DATE', 'OFF_RATING', 'DEF_RATING', 'NET_RATING', 'USG_PCT', 'TS_PCT']]
+advanced_stats['GAME_DATE'] = pd.to_datetime(advanced_stats['GAME_DATE'])
+
+# Plot Offensive Rating, Defensive Rating, and Net Rating over the season
+st.write("Offensive Rating, Defensive Rating, and Net Rating Over the Season")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['OFF_RATING'], mode='lines+markers', name='Offensive Rating', line=dict(color='green')))
+fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['DEF_RATING'], mode='lines+markers', name='Defensive Rating', line=dict(color='red')))
+fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['NET_RATING'], mode='lines+markers', name='Net Rating', line=dict(color='blue')))
+fig.update_layout(title='Offensive, Defensive, and Net Rating Over the Season', xaxis_title='Game Date', yaxis_title='Rating')
+st.plotly_chart(fig)
+
+# Plot Usage Percentage and True Shooting Percentage over the season
+st.write("Usage Percentage and True Shooting Percentage Over the Season")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['USG_PCT'], mode='lines+markers', name='Usage Percentage', line=dict(color='purple')))
+fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['TS_PCT'], mode='lines+markers', name='True Shooting Percentage', line=dict(color='orange')))
+fig.update_layout(title='Usage Percentage and True Shooting Percentage Over the Season', xaxis_title='Game Date', yaxis_title='Percentage')
+st.plotly_chart(fig)
+
+# Calculate opponent field goal attempts (Opp FGA) from advanced box score stats
+advanced_stats['Opp_FGA'] = boxscore_advanced_stats['OPP_FGA']
+
+# Calculate cumulative Opp FGA after each game
+advanced_stats['Cumulative_Opp_FGA'] = advanced_stats['Opp_FGA'].cumsum()
+# Calculate Opp FGA per game (Opp FGA PG) after each game
+advanced_stats['Opp_FGA_PG'] = advanced_stats['Cumulative_Opp_FGA'] / range(1, len(advanced_stats) + 1)
+
+# Plot Opp FGA progress over the season
+st.write("Opponent Field Goal Attempts (Opp FGA) Progress Over the Season")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=advanced_stats['GAME_DATE'], y=advanced_stats['Opp_FGA_PG'], mode='lines+markers', name='Opp FGA Progress', line=dict(color='brown')))
+fig.update_layout(title='Opponent Field Goal Attempts (Opp FGA) Progress Over the Season', xaxis_title='Game Date', yaxis_title='Opp FGA Per Game')
 st.plotly_chart(fig)
