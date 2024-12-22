@@ -100,4 +100,37 @@ fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_s
 fig.update_layout(title='Points Distribution from 2FG, 3FG, and FT Over the Season', xaxis_title='Game Date', yaxis_title='Points Per Game')
 st.plotly_chart(fig)
 
+# Calculate cumulative steals after each game
+current_season_stats['Cumulative_Steals'] = current_season_stats['STL'].cumsum()
+# Calculate steals per game (SPG) after each game
+current_season_stats['SPG'] = current_season_stats['Cumulative_Steals'] / current_season_stats['Game_Number']
 
+# Calculate cumulative blocks after each game
+current_season_stats['Cumulative_Blocks'] = current_season_stats['BLK'].cumsum()
+# Calculate blocks per game (BPG) after each game
+current_season_stats['BPG'] = current_season_stats['Cumulative_Blocks'] / current_season_stats['Game_Number']
+
+# Plot SPG and BPG progress over the season
+st.write("SPG and BPG Progress Over the Season")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['SPG'], mode='lines+markers', name='SPG Progress', line=dict(color='orange')))
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['BPG'], mode='lines+markers', name='BPG Progress', line=dict(color='purple')))
+fig.update_layout(title='SPG and BPG Progress Over the Season', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+st.plotly_chart(fig)
+
+# Calculate opponent field goal attempts and field goals made
+current_season_stats['OPP_FGA'] = gamelog_stats['OPP_FGA']
+current_season_stats['OPP_FGM'] = gamelog_stats['OPP_FGM']
+
+# Calculate field goal percentage allowed (FG% Allowed)
+current_season_stats['FG_PCT_Allowed'] = current_season_stats['OPP_FGM'] / current_season_stats['OPP_FGA']
+
+# Calculate cumulative FG% allowed after each game
+current_season_stats['Cumulative_FG_PCT_Allowed'] = current_season_stats['FG_PCT_Allowed'].expanding().mean()
+
+# Plot FG% Allowed progress over the season
+st.write("FG% Allowed Progress Over the Season")
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Cumulative_FG_PCT_Allowed'], mode='lines+markers', name='FG% Allowed Progress', line=dict(color='brown')))
+fig.update_layout(title='FG% Allowed Progress Over the Season', xaxis_title='Game Date', yaxis_title='FG% Allowed')
+st.plotly_chart(fig)
