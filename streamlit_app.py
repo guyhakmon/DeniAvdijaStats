@@ -19,6 +19,145 @@ player_id = player_dict[0]['id']
 career = playercareerstats.PlayerCareerStats(player_id=player_id)
 career_stats = career.get_data_frames()[0]
 
+# Get game logs for the current season
+current_season = '2024-25'  # Update this to the current season
+gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=current_season)
+gamelog_stats = gamelog.get_data_frames()[0]
+
+# Get stats for the last game
+last_game_stats = gamelog_stats.iloc[0]
+last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
+
+# Create a new reaction file for each new game
+game_date_str = last_game_date.replace(" ", "_")
+filename = f"reactions_{game_date_str}.txt"
+
+# Check if the file already exists
+import os
+if not os.path.exists(filename):
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(f"Reactions for the game on {last_game_date}\n\n")
+
+# Display last game stats in a more visually appealing way
+st.subheader("Last Game Stats")
+last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
+st.markdown(f"**Date:** {last_game_date}")
+st.markdown(f"**Points:** {last_game_stats['PTS']}")
+st.markdown(f"**Rebounds:** {last_game_stats['REB']}")
+st.markdown(f"**Assists:** {last_game_stats['AST']}")
+st.markdown(f"**Steals:** {last_game_stats['STL']}")
+st.markdown(f"**Blocks:** {last_game_stats['BLK']}")
+st.markdown(f"**Field Goal Percentage:** {last_game_stats['FG_PCT'] * 100:.2f}%")
+st.markdown(f"**Three-Point Percentage:** {last_game_stats['FG3_PCT'] * 100:.2f}%")
+
+# Calculate and display the average rating
+if os.path.exists(filename):
+    reactions = []
+    with open(filename, "r", encoding="utf-8") as f:
+        reaction = {}
+        for line in f:
+            if line.startswith("Name:"):
+                if reaction:
+                    reactions.append(reaction)
+                reaction = {"name": line.split(":")[1].strip()}
+            elif line.startswith("Rating:"):
+                reaction["rating"] = int(line.split(":")[1].strip().split()[0])
+            elif line.startswith("Comment:"):
+                reaction["comment"] = line.split(":")[1].strip()
+        if reaction:
+            reactions.append(reaction)
+
+    if reactions:
+        average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
+        st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
+    else:
+        st.markdown("No reactions yet.")
+else:
+    st.markdown("No reactions yet.")
+
+# Add a reaction to the last game stats with stars, option to comment, and identify by name and picture
+st.subheader("React to Last Game Stats")
+name = st.text_input("Enter your name")
+picture = st.camera_input("Take a picture")
+if picture:
+    st.image(picture, caption=f"{name}'s picture", use_container_width=True)
+    st.success("Photo uploaded successfully!")
+    st.progress(100)
+else:
+    st.progress(0)
+
+reaction = st.slider("Rate Deni Avdija's performance in the last game (1-5 stars)", 1, 5, 3)
+comment = st.text_area("Leave a comment about the performance")
+
+if st.button("Submit Reaction"):
+    if not name:
+        st.error("Please enter your name.")
+    else:
+        if reaction == 5:
+            st.write("🌟🌟🌟🌟🌟 Amazing! Deni Avdija had an outstanding game!")
+        elif reaction == 4:
+            st.write("🌟🌟🌟🌟 Good job! Deni Avdija performed well.")
+        elif reaction == 3:
+            st.write("🌟🌟🌟 Average performance. There's room for improvement.")
+        elif reaction == 2:
+            st.write("🌟🌟 Below average. It was a tough game.")
+        else:
+            st.write("🌟 Poor performance. Better luck next time!")
+        
+        if comment:
+            st.write("**Your comment:**", comment)
+        
+        # Save the reaction and comment with the game date
+        game_date_str = last_game_date.replace(" ", "_")
+        filename = f"reactions_{game_date_str}.txt"
+        with open(filename, "a", encoding="utf-8") as f:
+            f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
+        
+        if picture:
+            st.image(picture, caption=f"{name}'s picture", use_container_width=True)
+        
+        st.success("Your reaction has been saved!")
+
+        # Display Last 5 Reactions and the average rating
+        st.subheader("Last 5 Reactions and Average Rating")
+
+        # Read the reactions from the file
+        reactions = []
+        with open(filename, "r", encoding="utf-8") as f:
+            reaction = {}
+            for line in f:
+                if line.startswith("Name:"):
+                    if reaction:
+                        reactions.append(reaction)
+                    reaction = {"name": line.split(":")[1].strip()}
+                elif line.startswith("Rating:"):
+                    reaction["rating"] = int(line.split(":")[1].strip().split()[0])
+                elif line.startswith("Comment:"):
+                    reaction["comment"] = line.split(":")[1].strip()
+            if reaction:
+                reactions.append(reaction)
+
+        # Limit to the last 5 reactions
+        reactions = reactions[-5:]
+
+        # Display each reaction
+        for reaction in reactions:
+            if 'name' in reaction:
+                st.markdown(f"**Name:** {reaction['name']}")
+            if 'rating' in reaction:
+                st.markdown(f"**Rating:** {'🌟' * reaction['rating']}")
+            if 'comment' in reaction:
+                st.markdown(f"**Comment:** {reaction['comment']}")
+            st.markdown("---")
+
+        # Calculate and display the average rating
+        if reactions:
+            average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
+            st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
+        else:
+            st.markdown("No reactions yet.")
+
+
 # Summarize stats
 summary_stats = career_stats[['SEASON_ID', 'GP', 'PTS', 'REB', 'AST', 'STL', 'BLK']]
 st.write("Career Summary Stats")
