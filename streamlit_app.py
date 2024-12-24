@@ -1,6 +1,5 @@
 import streamlit as st
 # Set the page configuration
-st.set_page_config(page_title='Deni Avdija Stats Tracker')
 
 from nba_api.stats.endpoints import playercareerstats, playergamelog
 from nba_api.stats.static import players
