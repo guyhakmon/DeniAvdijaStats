@@ -10,7 +10,6 @@ from pytube import Search
 import json
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
-import numpy as np
 import os
 import requests
 from nba_api.stats.endpoints import teamgamelog
