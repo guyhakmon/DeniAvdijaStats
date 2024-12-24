@@ -92,7 +92,7 @@ st.subheader("ממוצעים אבדי-עונתיים")
 st.dataframe(average_stats_df)
 
 # Create a DataFrame for the last game stats
-st.subheader("ממוצעי המשחק האבדי-אחרון")
+st.subheader("אבדי-סטטיסטיקות משחק האחרון")
 last_game_stats_df = pd.DataFrame({
     'Date': [last_game_date],
     'Points': [last_game_stats['PTS']],
