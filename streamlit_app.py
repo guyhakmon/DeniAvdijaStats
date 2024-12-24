@@ -13,6 +13,8 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 import os
 import requests
+from nba_api.stats.endpoints import teamgamelog
+from nba_api.stats.static import teams
 
 # Streamlit app title
 st.title("Deni Avdija's NBA Stats")
@@ -45,29 +47,6 @@ if not os.path.exists(filename):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(f"Reactions for the game on {last_game_date}\n\n")
 
-        # Get the next game details from the Portland Trail Blazers schedule
-        schedule_url = "https://data.nba.net/prod/v1/2024/teams/1610612757/schedule.json"
-        response = requests.get(schedule_url)
-        schedule = response.json()
-
-        # Find the next game
-        today = datetime.now().date()
-        next_game = None
-        for game in schedule['league']['standard']:
-            game_date = datetime.strptime(game['startDateEastern'], '%Y%m%d').date()
-            if game_date > today:
-                next_game = game
-                break
-
-        if next_game:
-            next_game_date = datetime.strptime(next_game['startDateEastern'], '%Y%m%d').strftime('%B %d, %Y')
-            next_game_opponent = next_game['vTeam']['triCode'] if next_game['hTeam']['teamId'] == '1610612757' else next_game['hTeam']['triCode']
-            st.subheader("Next Game Details")
-            st.markdown(f"**Date:** {next_game_date}")
-            st.markdown(f"**Opponent:** {next_game_opponent}")
-        else:
-            st.subheader("Next Game Details")
-            st.markdown("No upcoming games found.")
 
 # Summarize current season stats
 current_season_stats = gamelog_stats[['GAME_DATE', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']]
