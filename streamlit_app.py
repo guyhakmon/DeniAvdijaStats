@@ -17,7 +17,7 @@ from nba_api.stats.static import teams
 
 
 st.set_page_config(
-    page_title='Deni Avdija Stats Tracker',
+    page_title='Maakabdi-App',
     page_icon="https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png",
     layout="centered",
     initial_sidebar_state="expanded"
