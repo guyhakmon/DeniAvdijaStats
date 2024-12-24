@@ -166,6 +166,34 @@ if os.path.exists(filename):
 else:
     st.markdown("No reactions yet.")
 
+# Display the last 5 reactions in a compact way
+st.subheader("Last 5 Reactions")
+
+# Read the reactions from the file
+reactions = []
+if os.path.exists(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        reaction = {}
+        for line in f:
+            if line.startswith("Name:"):
+                if reaction:
+                    reactions.append(reaction)
+                reaction = {"name": line.split(":")[1].strip()}
+            elif line.startswith("Rating:"):
+                reaction["rating"] = int(line.split(":")[1].strip().split()[0])
+            elif line.startswith("Comment:"):
+                reaction["comment"] = line.split(":")[1].strip()
+        if reaction:
+            reactions.append(reaction)
+
+# Limit to the last 5 reactions
+reactions = reactions[-5:]
+
+# Display each reaction in a compact way
+for reaction in reactions:
+    st.markdown(f"**{reaction['name']}**: {'🌟' * reaction['rating']} ({reaction['rating']} stars) - {reaction['comment']}")
+    st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
+
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
 st.subheader("React to The Last Game")
 with st.expander("React to The Last Game", expanded=False):
@@ -220,37 +248,6 @@ with st.expander("React to The Last Game", expanded=False):
                 f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
             
             st.success("Your reaction has been saved!")
-
-        # Display Last 5 Reactions and the average rating
-        st.subheader("Last 5 Reactions and Average Rating")
-
-        # Read the reactions from the file
-        reactions = []
-        with open(filename, "r", encoding="utf-8") as f:
-            reaction = {}
-            for line in f:
-                if line.startswith("Name:"):
-                    if reaction:
-                        reactions.append(reaction)
-                    reaction = {"name": line.split(":")[1].strip()}
-                elif line.startswith("Rating:"):
-                    reaction["rating"] = int(line.split(":")[1].strip().split()[0])
-                elif line.startswith("Comment:"):
-                    reaction["comment"] = line.split(":")[1].strip()
-            if reaction:
-                reactions.append(reaction)
-
-        # Limit to the last 5 reactions
-        reactions = reactions[-5:]
-        # Display each reaction
-        for reaction in reactions:
-            if 'name' in reaction:
-                st.markdown(f"**Name:** {reaction['name']}")
-            if 'rating' in reaction:
-                st.markdown(f"**Rating:** {'🌟' * reaction['rating']}")
-            if 'comment' in reaction:
-                st.markdown(f"**Comment:** {reaction['comment']}")
-            st.markdown("---")
 
 # Train the linear regression model
 model = LinearRegression()
