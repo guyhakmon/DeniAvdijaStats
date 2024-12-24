@@ -4,7 +4,7 @@ pandas
 matplotlib
 plotly
 pytube
-sklearn
+scikit-learn
 numpy
 os
 requests
