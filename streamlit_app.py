@@ -15,6 +15,15 @@ import requests
 from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
 
+
+st.set_page_config(
+    page_title='Deni Avdija Stats Tracker',
+    page_icon="https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
+
 # Streamlit app title
 st.markdown(
     """
