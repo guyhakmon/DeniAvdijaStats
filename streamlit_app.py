@@ -16,7 +16,17 @@ from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
 
 # Streamlit app title
-st.title("Deni Avdija's NBA Stats")
+st.markdown(
+    """
+    <style>
+    body {
+        direction: rtl;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+st.title("מעקבדי-דף")
 # Add a photo of Deni Avdija
 st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", use_container_width=True)
 
@@ -70,11 +80,11 @@ average_stats_df = pd.DataFrame({
 })
 
 # Display the average stats in a table
-st.subheader("Average Stats for Current Season")
+st.subheader("ממוצעים אבדי-עונתיים")
 st.dataframe(average_stats_df)
 
 # Create a DataFrame for the last game stats
-st.subheader("Last Game Stats")
+st.subheader("ממוצעי המשחק האבדי-אחרון")
 last_game_stats_df = pd.DataFrame({
     'Date': [last_game_date],
     'Points': [last_game_stats['PTS']],
@@ -102,7 +112,7 @@ last_game_stats_df = pd.DataFrame({
 st.dataframe(last_game_stats_df)
 
 # Display the guessers' points for this game
-st.subheader("Guessers' Points for This Game")
+st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
 
 # Check if points have already been calculated and stored
 points_filename = "points.json"
@@ -167,7 +177,7 @@ else:
     st.markdown("No reactions yet.")
 
 # Display the last 5 reactions in a compact way
-st.subheader("Last 5 Reactions")
+st.subheader("חמשת האבדי-תגובות האבדי-אחרונות")
 
 # Read the reactions from the file
 reactions = []
@@ -195,8 +205,8 @@ for reaction in reactions:
     st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
-st.subheader("React to The Last Game")
-with st.expander("React to The Last Game", expanded=False):
+st.subheader("תן אבדי-תגובה למשחקו האחרון של דני")
+with st.expander("תן אבדי-תגובה למשחקו האחרון של דני", expanded=False):
     # Load existing names from a file or create an empty list if the file doesn't exist
     names_filename = "names.json"
     if os.path.exists(names_filename):
@@ -220,26 +230,27 @@ with st.expander("React to The Last Game", expanded=False):
 
     name = selected_name
 
-    reaction = st.slider("Rate Deni Avdija's performance in the last game (1-5 stars)", 1, 5, 3)
-    comment = st.text_area("Leave a comment about the performance")
+    st.markdown("דרג באמצעות האבדי-כוכבים את משחקו האחרון של דני")
+    reaction = st.slider("Rate the game", 1, 5, 3)
+    comment = st.text_area("השאר אבדי-תגובה על ביצועיו המרהיבים או לא של דני (אבדיה)")
 
     if st.button("Submit Reaction"):
         if not name:
             st.error("Please enter your name.")
         else:
             if reaction == 5:
-                st.write("🌟🌟🌟🌟🌟 Amazing! Deni Avdija had an outstanding game!")
+                st.write("🌟🌟🌟🌟🌟 המשחק היה אבדי-מושלם!!")
             elif reaction == 4:
-                st.write("🌟🌟🌟🌟 Good job! Deni Avdija performed well.")
+                st.write("🌟🌟🌟🌟 משחק טובדי-מאוד")
             elif reaction == 3:
-                st.write("🌟🌟🌟 Average performance. There's room for improvement.")
+                st.write("🌟🌟🌟 הפעם הוא היה אבדי-ממוצע")
             elif reaction == 2:
-                st.write("🌟🌟 Below average. It was a tough game.")
+                st.write("🌟🌟 משחק מתחת לאבדי-ממוצע")
             else:
-                st.write("🌟 Poor performance. Better luck next time!")
+                st.write("🌟 משחק אבדון")
             
             if comment:
-                st.write("**Your comment:**", comment)
+                st.write("**האבדי-תגובה שלך:**", comment)
             
             # Save the reaction and comment with the game date
             game_date_str = last_game_date.replace(" ", "_")
@@ -247,14 +258,14 @@ with st.expander("React to The Last Game", expanded=False):
             with open(filename, "a", encoding="utf-8") as f:
                 f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
             
-            st.success("Your reaction has been saved!")
+            st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
 # Train the linear regression model
 model = LinearRegression()
 model.fit(X, y)
 
 # Predict next game performance based on stats
-st.subheader("Predicted Performance for Next Game")
+st.subheader("אבדי-חיזוי של ביצועיו של דני במשחק האבדי-בא")
 # Predict the next game's performance
 last_game_features = current_season_stats[features].values[-1].reshape(1, -1)
 predicted_stats = model.predict(last_game_features)[0]
@@ -283,10 +294,10 @@ predicted_stats_df = pd.DataFrame({
 st.dataframe(predicted_stats_df)
 
 # Add a section for users to guess Deni's next game stats
-st.subheader("Guess Deni's Next Game Stats")
+st.subheader("נחש את ביצועיו של דני במשחק האבדי-בא")
 
 # Ask if the user wants to guess the next game stats
-with st.expander("Guess Deni's Next Game Stats", expanded=False):
+with st.expander("נחש את ביצועיו של דני במשחק האבדי-בא", expanded=False):
     # Input fields for user guesses
     guessed_points = st.number_input("Guess Points", min_value=0, max_value=100, value=predicted_points)
     guessed_rebounds = st.number_input("Guess Rebounds", min_value=0, max_value=50, value=predicted_rebounds)
@@ -350,7 +361,7 @@ with st.expander("Guess Deni's Next Game Stats", expanded=False):
             st.success("Your guess has been saved!")
         
         # Display Last 5 Guesses
-        st.subheader("Last 5 Guesses")
+        st.subheader("חמשת האבדי-ניחושים האבדי-אחרונים")
 
         # Read the guesses from the file
         guesses = []
@@ -453,13 +464,13 @@ with st.expander("Guess Deni's Next Game Stats", expanded=False):
             st.write(f"Name: {name}, Points: {guess['points']}, Rebounds: {guess['rebounds']}, Assists: {guess['assists']}, Points Scored: {points_scored}")
 
         # Display the total points for each guesser
-        st.subheader("Total Points for Each Guesser")
+        st.subheader("אבדי-נקודות סופיות לכל מנחש")
         for name, total in total_points.items():
             st.write(f"Name: {name}, Total Points: {total}")
 
 # Summarize stats
+st.write("אבדי-סיכום סטטיסטיקות קריירה")
 summary_stats = career_stats[['SEASON_ID', 'GP', 'PTS', 'REB', 'AST', 'STL', 'BLK']]
-st.write("Career Summary Stats")
 st.dataframe(summary_stats)
 
 # Get game logs for the current season
@@ -468,7 +479,7 @@ gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=current_season
 gamelog_stats = gamelog.get_data_frames()[0]
 
 # Display the game log for the current season
-st.subheader("Game Log for Current Season")
+st.subheader("אבדי-יומן משחקים לעונה הנוכחית")
 st.dataframe(gamelog_stats)
 
 # Summarize current season stats
@@ -498,7 +509,7 @@ current_season_stats['Cumulative_FG_PCT'] = current_season_stats['FG_PCT'].expan
 current_season_stats['Cumulative_FG3_PCT'] = current_season_stats['FG3_PCT'].expanding().mean()
 
 # Plot PPG, RPG, APG progress over the season
-st.write("PPG, RPG, APG Progress Over the Season")
+st.write("אבדי-התפתחות PPG, RPG, APG לאורך העונה")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['PPG'], mode='lines+markers', name='PPG Progress', line=dict(color='green')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['RPG'], mode='lines+markers', name='RPG Progress', line=dict(color='blue')))
@@ -507,7 +518,7 @@ fig.update_layout(title='PPG, RPG, APG Progress Over the Season', xaxis_title='G
 st.plotly_chart(fig)
 
 # Plot FG% and 3P% progress over the season
-st.write("FG% and 3P% Progress Over the Season")
+st.write("אבדי-התפתחות FG% ו-3P% לאורך העונה")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Cumulative_FG_PCT'], mode='lines+markers', name='FG% Progress', line=dict(color='magenta')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Cumulative_FG3_PCT'], mode='lines+markers', name='3P% Progress', line=dict(color='cyan')))
@@ -535,7 +546,7 @@ current_season_stats['Cumulative_3FG_PTS'] = current_season_stats['3FG_PTS'].cum
 current_season_stats['3FG_PPG'] = current_season_stats['Cumulative_3FG_PTS'] / current_season_stats['Game_Number']
 
 # Plot points distribution
-st.write("Points Distribution from 2FG, 3FG, and FT Over the Season")
+st.write("אבדי-התפלגות נקודות מ-2FG, 3FG, ו-FT לאורך העונה")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['2FG_PPG'], mode='lines+markers', name='Points from 2FG Per Game', line=dict(color='green')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['3FG_PPG'], mode='lines+markers', name='Points from 3FG Per Game', line=dict(color='red')))
@@ -554,7 +565,7 @@ current_season_stats['Cumulative_Blocks'] = current_season_stats['BLK'].cumsum()
 current_season_stats['BPG'] = current_season_stats['Cumulative_Blocks'] / current_season_stats['Game_Number']
 
 # Plot SPG and BPG progress over the season
-st.write("SPG and BPG Progress Over the Season")
+st.write("אבדי-התפתחות SPG ו-BPG לאורך העונה")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['SPG'], mode='lines+markers', name='SPG Progress', line=dict(color='orange')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['BPG'], mode='lines+markers', name='BPG Progress', line=dict(color='purple')))
@@ -568,7 +579,7 @@ current_season_stats['Rolling_RPG'] = current_season_stats['REB'].rolling(window
 current_season_stats['Rolling_APG'] = current_season_stats['AST'].rolling(window=5).mean()
 
 # Plot rolling average PPG, RPG, APG progress over the season
-st.write("Rolling Average PPG, RPG, APG Progress Over the Season (5 Games)")
+st.write("אבדי-ממוצע נע PPG, RPG, APG לאורך העונה (5 משחקים)")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_PPG'], mode='lines+markers', name='Rolling PPG', line=dict(color='green')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_RPG'], mode='lines+markers', name='Rolling RPG', line=dict(color='blue')))
@@ -581,7 +592,7 @@ current_season_stats['Rolling_FG_PCT'] = current_season_stats['FG_PCT'].rolling(
 current_season_stats['Rolling_FG3_PCT'] = current_season_stats['FG3_PCT'].rolling(window=5).mean()
 
 # Plot rolling average FG% and 3P% progress over the season
-st.write("Rolling Average FG% and 3P% Progress Over the Season (5 Games)")
+st.write("אבדי-ממוצע נע FG% ו-3P% לאורך העונה (5 משחקים)")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_FG_PCT'], mode='lines+markers', name='Rolling FG%', line=dict(color='magenta')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_FG3_PCT'], mode='lines+markers', name='Rolling 3P%', line=dict(color='cyan')))
@@ -593,7 +604,7 @@ current_season_stats['Rolling_SPG'] = current_season_stats['STL'].rolling(window
 current_season_stats['Rolling_BPG'] = current_season_stats['BLK'].rolling(window=5).mean()
 
 # Plot rolling average SPG and BPG progress over the season
-st.write("Rolling Average SPG and BPG Progress Over the Season (5 Games)")
+st.write("אבדי-ממוצע נע SPG ו-BPG לאורך העונה (5 משחקים)")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_SPG'], mode='lines+markers', name='Rolling SPG', line=dict(color='orange')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_BPG'], mode='lines+markers', name='Rolling BPG', line=dict(color='purple')))
