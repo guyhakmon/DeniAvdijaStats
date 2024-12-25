@@ -21,7 +21,96 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded"
 )
-
+# Add custom CSS for page styling
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #f0f2f6;
+        color: #333;
+        font-family: 'Arial', sans-serif;
+        background-image: url('https://wallpaperaccess.com/full/1122017.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
+    }
+    .stApp {
+        background-color: rgba(240, 242, 246, 0.9);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.5s ease;
+    }
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 12px;
+        transition: background-color 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #45a049;
+    }
+    .stDataFrame {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 10px;
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .stMarkdown {
+        font-family: 'Arial', sans-serif;
+    }
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 30px;
+        height: 100%;
+        background: linear-gradient(to bottom, red, black);
+        transition: background 0.01s ease;
+    }
+    .stApp::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 100%;
+        background: linear-gradient(to bottom, red, black);
+        transition: background 0.1s ease;
+    }
+    .stTitle {
+        color: red;
+    }
+    .stSubheader {
+        color: red;
+    }
+    .basketball {
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/7a/Basketball.png');
+        background-size: cover;
+        border-radius: 50%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+    <div class="basketball"></div>
+    """,
+    unsafe_allow_html=True
+)
 
 # Streamlit app title
 st.markdown(
@@ -36,7 +125,8 @@ st.markdown(
 )
 st.title("מעקבדי-דף")
 # Add a photo of Deni Avdija
-st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", use_container_width=True)
+st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", width=300)
+
 
 # Find player ID for Deni Avdija
 player_dict = players.find_players_by_full_name("Deni Avdija")
