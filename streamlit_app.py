@@ -74,7 +74,7 @@ st.markdown(
         position: fixed;
         top: 0;
         left: 0;
-        width: 100px;
+        width: 50px;
         height: 100%;
         background: linear-gradient(to bottom, red, black);
         z-index: -1;
@@ -85,7 +85,7 @@ st.markdown(
         position: fixed;
         top: 0;
         right: 0;
-        width: 100px;
+        width: 50px;
         height: 100%;
         background: linear-gradient(to bottom, red, black);
         z-index: -1;
