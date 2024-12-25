@@ -74,9 +74,10 @@ st.markdown(
         position: fixed;
         top: 0;
         left: 0;
-        width: 30px;
+        width: 10px;
         height: 100%;
         background: linear-gradient(to bottom, red, black);
+        z-index: -1;
         transition: background 0.01s ease;
     }
     .stApp::after {
@@ -84,9 +85,10 @@ st.markdown(
         position: fixed;
         top: 0;
         right: 0;
-        width: 30px;
+        width: 10px;
         height: 100%;
         background: linear-gradient(to bottom, red, black);
+        z-index: -1;
         transition: background 0.1s ease;
     }
     .stTitle {
