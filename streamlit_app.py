@@ -404,7 +404,7 @@ visitor_wl = next_game_details['VISITOR_WL']
 
 # Calculate the time remaining until the next game
 try:
-    next_game_datetime = datetime.strptime(f"{next_game_date} {next_game_time}", "%Y-%m-%d %H:%M:%S")
+    next_game_datetime = datetime.strptime(f"{next_game_date} {next_game_time}", "%b %d, %Y %I:%M %p")
     time_remaining = next_game_datetime - datetime.now()
 
     # Format the time remaining
