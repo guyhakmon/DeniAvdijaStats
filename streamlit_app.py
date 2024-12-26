@@ -14,7 +14,7 @@ import os
 import requests
 from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
-
+import sqlite3
 
 st.set_page_config(
     page_title='Maakabdi-App',
@@ -148,15 +148,42 @@ gamelog_stats = gamelog.get_data_frames()[0]
 last_game_stats = gamelog_stats.iloc[0]
 last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
 
-# Create a new reaction file for each new game
+# Initialize SQLite database
+conn = sqlite3.connect('deni_avdija_stats.db')
+c = conn.cursor()
+
+# Create tables if they don't exist
+c.execute('''
+CREATE TABLE IF NOT EXISTS reactions (
+    id INTEGER PRIMARY KEY,
+    game_date TEXT,
+    name TEXT,
+    rating INTEGER,
+    comment TEXT
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS guesses (
+    id INTEGER PRIMARY KEY,
+    game_date TEXT,
+    name TEXT,
+    points INTEGER,
+    rebounds INTEGER,
+    assists INTEGER,
+    steals INTEGER,
+    blocks INTEGER,
+    fg_pct REAL,
+    fg3_pct REAL
+)
+''')
+conn.commit()
+
+# Create a new reaction for each new game
 game_date_str = last_game_date.replace(" ", "_")
-filename = f"reactions_{game_date_str}.txt"
-
-# Check if the file already exists
-if not os.path.exists(filename):
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(f"Reactions for the game on {last_game_date}\n\n")
-
+c.execute("SELECT COUNT(*) FROM reactions WHERE game_date = ?", (game_date_str,))
+if c.fetchone()[0] == 0:
+    c.execute("INSERT INTO reactions (game_date) VALUES (?)", (game_date_str,))
+    conn.commit()
 
 # Summarize current season stats
 current_season_stats = gamelog_stats[['GAME_DATE', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']]
@@ -250,56 +277,20 @@ else:
     st.markdown("Highlights not available yet.")
 
 # Calculate and display the average rating
-if os.path.exists(filename):
-    reactions = []
-    with open(filename, "r", encoding="utf-8") as f:
-        reaction = {}
-        for line in f:
-            if line.startswith("Name:"):
-                if reaction:
-                    reactions.append(reaction)
-                reaction = {"name": line.split(":")[1].strip()}
-            elif line.startswith("Rating:"):
-                reaction["rating"] = int(line.split(":")[1].strip().split()[0])
-            elif line.startswith("Comment:"):
-                reaction["comment"] = line.split(":")[1].strip()
-        if reaction:
-            reactions.append(reaction)
-
-    if reactions:
-        average_rating = sum([r['rating'] for r in reactions]) / len(reactions)
-        st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
-    else:
-        st.markdown("No reactions yet.")
+c.execute("SELECT rating FROM reactions WHERE game_date = ?", (game_date_str,))
+reactions = c.fetchall()
+if reactions:
+    average_rating = sum([r[0] for r in reactions]) / len(reactions)
+    st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
 else:
     st.markdown("No reactions yet.")
 
 # Display the last 5 reactions in a compact way
 st.subheader("חמשת האבדי-תגובות האחרונות")
-
-# Read the reactions from the file
-reactions = []
-if os.path.exists(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        reaction = {}
-        for line in f:
-            if line.startswith("Name:"):
-                if reaction:
-                    reactions.append(reaction)
-                reaction = {"name": line.split(":")[1].strip()}
-            elif line.startswith("Rating:"):
-                reaction["rating"] = int(line.split(":")[1].strip().split()[0])
-            elif line.startswith("Comment:"):
-                reaction["comment"] = line.split(":")[1].strip()
-        if reaction:
-            reactions.append(reaction)
-
-# Limit to the last 5 reactions
-reactions = reactions[-5:]
-
-# Display each reaction in a compact way
+c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
+reactions = c.fetchall()
 for reaction in reactions:
-    st.markdown(f"**{reaction['name']}**: {'🌟' * reaction['rating']} ({reaction['rating']} stars) - {reaction['comment']}")
+    st.markdown(f"**{reaction[0]}**: {'🌟' * reaction[1]} ({reaction[1]} stars) - {reaction[2]}")
     st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
@@ -351,10 +342,8 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
                 st.write("**האבדי-תגובה שלך:**", comment)
             
             # Save the reaction and comment with the game date
-            game_date_str = last_game_date.replace(" ", "_")
-            filename = f"reactions_{game_date_str}.txt"
-            with open(filename, "a", encoding="utf-8") as f:
-                f.write(f"Name: {name}\nRating: {reaction} stars\nComment: {comment}\n\n")
+            c.execute("INSERT INTO reactions (game_date, name, rating, comment) VALUES (?, ?, ?, ?)", (game_date_str, name, reaction, comment))
+            conn.commit()
             
             st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
@@ -504,58 +493,20 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
             st.markdown(f"**Guessed Three-Point Percentage:** {guessed_fg3_pct:.2f}%")
             
             # Save the guess with the name of the guesser and the date of the next game
-            guess_filename = f"guesses_{game_date_str}.txt"
-            with open(guess_filename, "a", encoding="utf-8") as f:
-                f.write(f"Name: {name}\n")
-                f.write(f"Next Game Date: {next_game_date}\n")
-                f.write(f"Guessed Points: {guessed_points}\n")
-                f.write(f"Guessed Rebounds: {guessed_rebounds}\n")
-                f.write(f"Guessed Assists: {guessed_assists}\n")
-                f.write(f"Guessed Steals: {guessed_steals}\n")
-                f.write(f"Guessed Blocks: {guessed_blocks}\n")
-                f.write(f"Guessed Field Goal Percentage: {guessed_fg_pct:.2f}%\n")
-                f.write(f"Guessed Three-Point Percentage: {guessed_fg3_pct:.2f}%\n")
-                f.write("\n")
+            c.execute("INSERT INTO guesses (game_date, name, points, rebounds, assists, steals, blocks, fg_pct, fg3_pct) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (next_game_date, name, guessed_points, guessed_rebounds, guessed_assists, guessed_steals, guessed_blocks, guessed_fg_pct, guessed_fg3_pct))
+            conn.commit()
             
             st.success("Your guess has been saved!")
         
 # Display Last 5 Guesses
 st.subheader("חמשת האבדי-ניחושים האחרונים")
-guess_filename = f"guesses_{game_date_str}.txt"
-# Read the guesses from the file
-guesses = []
-if os.path.exists(guess_filename):
-    with open(guess_filename, "r", encoding="utf-8") as f:
-        guess = None
-        for line in f:
-            if line.startswith("Name:"):
-                if guess:
-                    guesses.append(guess)
-                guess = {"name": line.split(":")[1].strip()}
-            elif line.startswith("Guessed Points:"):
-                guess["points"] = int(line.split(":")[1].strip())
-            elif line.startswith("Guessed Rebounds:"):
-                guess["rebounds"] = int(line.split(":")[1].strip())
-            elif line.startswith("Guessed Assists:"):
-                guess["assists"] = int(line.split(":")[1].strip())
-            elif line.startswith("Guessed Steals:"):
-                guess["steals"] = int(line.split(":")[1].strip())
-            elif line.startswith("Guessed Blocks:"):
-                guess["blocks"] = int(line.split(":")[1].strip())
-            elif line.startswith("Guessed Field Goal Percentage:"):
-                guess["fg_pct"] = float(line.split(":")[1].strip().replace('%', ''))
-            elif line.startswith("Guessed Three-Point Percentage:"):
-                guess["fg3_pct"] = float(line.split(":")[1].strip().replace('%', ''))
-        if guess:
-            guesses.append(guess)
-
-# Limit to the last 5 guesses
-guesses = guesses[-5:]
+c.execute("SELECT name, points, rebounds, assists, steals, blocks, fg_pct, fg3_pct FROM guesses WHERE game_date = ? ORDER BY id DESC LIMIT 5", (next_game_date,))
+guesses = c.fetchall()
 # Print the number of guesses
 st.write(f"Total number of guesses: {len(guesses)}")
 # Display each guess
 for guess in guesses:
-    st.write(f"**{guess['name']}**: PTS: {guess['points']}, REB: {guess['rebounds']}, AST: {guess['assists']}, STL: {guess['steals']}, BLK: {guess['blocks']}, FG%: {guess['fg_pct']:.2f}, 3P%: {guess['fg3_pct']:.2f}")
+    st.write(f"**{guess[0]}**: PTS: {guess[1]}, REB: {guess[2]}, AST: {guess[3]}, STL: {guess[4]}, BLK: {guess[5]}, FG%: {guess[6]:.2f}, 3P%: {guess[7]:.2f}")
     st.markdown("---")
 
 # Function to calculate points based on the accuracy of the guess
@@ -757,4 +708,7 @@ fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_s
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_BPG'], mode='lines+markers', name='Rolling BPG', line=dict(color='purple')))
 fig.update_layout(title='Rolling Average SPG and BPG Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
+
+# Close the database connection
+conn.close()
 
