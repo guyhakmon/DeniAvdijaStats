@@ -176,6 +176,26 @@ CREATE TABLE IF NOT EXISTS guesses (
     fg3_pct REAL
 )
 ''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS names (
+    id INTEGER PRIMARY KEY,
+    name TEXT UNIQUE
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS points (
+    game_date TEXT,
+    name TEXT,
+    points INTEGER,
+    PRIMARY KEY (game_date, name)
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS total_points (
+    name TEXT PRIMARY KEY,
+    total_points INTEGER
+)
+''')
 conn.commit()
 
 # Create a new reaction for each new game
@@ -300,13 +320,9 @@ for reaction in reactions:
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
 st.subheader("תן אבדי-תגובה למשחקו האחרון של דני")
 with st.expander("תן אבדי-תגובה למשחקו האחרון של דני", expanded=False):
-    # Load existing names from a file or create an empty list if the file doesn't exist
-    names_filename = "names.json"
-    if os.path.exists(names_filename):
-        with open(names_filename, "r", encoding="utf-8") as f:
-            names = json.load(f)
-    else:
-        names = []
+    # Load existing names from the database
+    c.execute("SELECT name FROM names")
+    names = [row[0] for row in c.fetchall()]
 
     # Dropdown to select a name from the list
     selected_name = st.selectbox("Select your name", options=names, key="selectbox_name")
@@ -317,8 +333,8 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
     if new_name:
         if new_name not in names:
             names.append(new_name)
-            with open(names_filename, "w", encoding="utf-8") as f:
-                json.dump(names, f)
+            c.execute("INSERT INTO names (name) VALUES (?)", (new_name,))
+            conn.commit()
         selected_name = new_name
 
     name = selected_name
@@ -459,15 +475,6 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
     guessed_fg_pct = st.number_input("Guess Field Goal Percentage", min_value=0.0, max_value=100.0, value=predicted_fg_pct)
     guessed_fg3_pct = st.number_input("Guess Three-Point Percentage", min_value=0.0, max_value=100.0, value=predicted_fg3_pct)
 
-    # Input field for user name
-    # Load existing names from a file or create an empty list if the file doesn't exist
-    names_filename = "names.json"
-    if os.path.exists(names_filename):
-        with open(names_filename, "r", encoding="utf-8") as f:
-            names = json.load(f)
-    else:
-        names = []
-
     # Dropdown to select a name from the list
     selected_name = st.selectbox("Select your name", options=names)
 
@@ -477,8 +484,8 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
     if new_name:
         if new_name not in names:
             names.append(new_name)
-            with open(names_filename, "w", encoding="utf-8") as f:
-                json.dump(names, f)
+            c.execute("INSERT INTO names (name) VALUES (?)", (new_name,))
+            conn.commit()
         selected_name = new_name
 
     name = selected_name
@@ -531,43 +538,28 @@ actual_stats = {
 # Get the current game date
 current_game_date = datetime.now().strftime("%Y-%m-%d")
 
-# Check if points have already been calculated and stored
-points_filename = "points.json"
-if os.path.exists(points_filename):
-    with open(points_filename, "r", encoding="utf-8") as f:
-        points_data = json.load(f)
-else:
-    points_data = {}
-
 # Calculate points if not already calculated for the current game
-if current_game_date not in points_data:
-    points_data[current_game_date] = {}
-
+c.execute("SELECT name, points, rebounds, assists FROM guesses WHERE game_date = ?", (current_game_date,))
+guesses = c.fetchall()
 for guess in guesses:
-    name = guess["name"]
-    if name not in points_data[current_game_date]:
-        points_data[current_game_date][name] = calculate_points(guess, actual_stats)
-
-# Store the points data
-with open(points_filename, "w", encoding="utf-8") as f:
-    json.dump(points_data, f)
+    name = guess[0]
+    guess_dict = {"points": guess[1], "rebounds": guess[2], "assists": guess[3]}
+    points = calculate_points(guess_dict, actual_stats)
+    c.execute("INSERT INTO points (game_date, name, points) VALUES (?, ?, ?) ON CONFLICT(game_date, name) DO UPDATE SET points = ?", (current_game_date, name, points, points))
+    conn.commit()
 
 # Aggregate total points for each guesser
-total_points = {}
-for game_date, game_data in points_data.items():
-    for name, points in game_data.items():
-        if name not in total_points:
-            total_points[name] = 0
-        total_points[name] += points
-
-# Store the total points data
-total_points_filename = "total_points.json"
-with open(total_points_filename, "w", encoding="utf-8") as f:
-    json.dump(total_points, f)
+c.execute("SELECT name, SUM(points) FROM points GROUP BY name")
+total_points = c.fetchall()
+for name, total in total_points:
+    c.execute("INSERT INTO total_points (name, total_points) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET total_points = ?", (name, total, total))
+    conn.commit()
 
 # Display the total points for each guesser
 st.subheader("אבדי-נקודות סופיות לכל מנחש")
-for name, total in total_points.items():
+c.execute("SELECT name, total_points FROM total_points")
+total_points = c.fetchall()
+for name, total in total_points:
     st.write(f"שם: {name}, סך הכל נקודות: {total}")
 
 # Summarize stats
