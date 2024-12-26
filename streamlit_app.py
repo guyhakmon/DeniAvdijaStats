@@ -15,6 +15,7 @@ import requests
 from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
 import sqlite3
+from datetime import datetime, timedelta
 
 st.set_page_config(
     page_title='Maakabdi-App',
@@ -397,6 +398,16 @@ visitor_team_nickname = next_game_details['VISITOR_TEAM_NICKNAME']
 home_wl = next_game_details['HOME_WL']
 visitor_wl = next_game_details['VISITOR_WL']
 
+# Calculate the time remaining until the next game
+next_game_datetime = datetime.strptime(f"{next_game_date} {next_game_time}", "%Y-%m-%d %H:%M:%S")
+time_remaining = next_game_datetime - datetime.now()
+
+# Format the time remaining
+days, seconds = time_remaining.days, time_remaining.seconds
+hours = seconds // 3600
+minutes = (seconds % 3600) // 60
+seconds = seconds % 60
+
 st.markdown(f"""
     <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
         <h3 style="text-align:center; color:#FF6347;">פרטי המשחק הבא של דני</h3>
@@ -406,6 +417,7 @@ st.markdown(f"""
         <p><strong>קבוצה אורחת:</strong> {visitor_team_name} ({visitor_team_abbr})</p>
         <p><strong>מאזן קבוצה מארחת:</strong> {home_wl}</p>
         <p><strong>מאזן קבוצה אורחת:</strong> {visitor_wl}</p>
+        <p><strong>זמן נותר עד המשחק:</strong> {days} ימים, {hours} שעות, {minutes} דקות, {seconds} שניות</p>
     </div>
 """, unsafe_allow_html=True)
 
