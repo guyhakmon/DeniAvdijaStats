@@ -543,7 +543,11 @@ c.execute("SELECT name, points, rebounds, assists FROM guesses WHERE game_date =
 guesses = c.fetchall()
 for guess in guesses:
     name = guess[0]
-    guess_dict = {"points": guess[1], "rebounds": guess[2], "assists": guess[3]}
+    guess_dict = {
+        "points": guess[1] if guess[1] is not None else 0,
+        "rebounds": guess[2] if guess[2] is not None else 0,
+        "assists": guess[3] if guess[3] is not None else 0
+    }
     points = calculate_points(guess_dict, actual_stats)
     c.execute("INSERT INTO points (game_date, name, points) VALUES (?, ?, ?) ON CONFLICT(game_date, name) DO UPDATE SET points = ?", (current_game_date, name, points, points))
     conn.commit()
