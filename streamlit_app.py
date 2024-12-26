@@ -316,12 +316,12 @@ c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER
 reactions = c.fetchall()
 for reaction in reactions:
     name = reaction[0] if reaction[0] is not None else "Anonymous"
-    rating = reaction[1]
+    rating = reaction[1] if reaction[1] is not None else 0
     comment = reaction[2] if reaction[2] is not None else ""
-    stars = '🌟' * rating if rating is not None else ""
-    rating_text = f" ({rating} stars)" if rating is not None else ""
-    st.markdown(f"**{name}**: {stars}{rating_text} - {comment}")
-    st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
+    if name or rating or comment:  # Only display if there is content
+        stars = '🌟' * rating
+        st.markdown(f"**{name}**: {stars} ({rating} stars) - {comment}")
+        st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
 st.subheader("תן אבדי-תגובה למשחקו האחרון של דני")
