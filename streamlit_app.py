@@ -292,7 +292,9 @@ st.subheader("חמשת האבדי-תגובות האחרונות")
 c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
 reactions = c.fetchall()
 for reaction in reactions:
-    st.markdown(f"**{reaction[0]}**: {'🌟' * reaction[1]} ({reaction[1]} stars) - {reaction[2]}")
+    rating = reaction[1] if reaction[1] is not None else 0
+    stars = '🌟' * rating
+    st.markdown(f"**{reaction[0]}**: {stars} ({rating} stars) - {reaction[2]}")
     st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
