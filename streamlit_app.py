@@ -151,59 +151,55 @@ last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %
 # Define the path for the SQLite database file
 db_path = os.path.join(os.getcwd(), 'deni_avdija_stats.db')
 
-# Check if the database file already exists
-db_exists = os.path.exists(db_path)
-
 # Initialize SQLite database
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
 # Create tables if they don't exist
-if not db_exists:
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS reactions (
-        id INTEGER PRIMARY KEY,
-        game_date TEXT,
-        name TEXT,
-        rating INTEGER,
-        comment TEXT
-    )
-    ''')
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS guesses (
-        id INTEGER PRIMARY KEY,
-        game_date TEXT,
-        name TEXT,
-        points INTEGER,
-        rebounds INTEGER,
-        assists INTEGER,
-        steals INTEGER,
-        blocks INTEGER,
-        fg_pct REAL,
-        fg3_pct REAL
-    )
-    ''')
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS names (
-        id INTEGER PRIMARY KEY,
-        name TEXT UNIQUE
-    )
-    ''')
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS points (
-        game_date TEXT,
-        name TEXT,
-        points INTEGER,
-        PRIMARY KEY (game_date, name)
-    )
-    ''')
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS total_points (
-        name TEXT PRIMARY KEY,
-        total_points INTEGER
-    )
-    ''')
-    conn.commit()
+c.execute('''
+CREATE TABLE IF NOT EXISTS reactions (
+    id INTEGER PRIMARY KEY,
+    game_date TEXT,
+    name TEXT,
+    rating INTEGER,
+    comment TEXT
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS guesses (
+    id INTEGER PRIMARY KEY,
+    game_date TEXT,
+    name TEXT,
+    points INTEGER,
+    rebounds INTEGER,
+    assists INTEGER,
+    steals INTEGER,
+    blocks INTEGER,
+    fg_pct REAL,
+    fg3_pct REAL
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS names (
+    id INTEGER PRIMARY KEY,
+    name TEXT UNIQUE
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS points (
+    game_date TEXT,
+    name TEXT,
+    points INTEGER,
+    PRIMARY KEY (game_date, name)
+)
+''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS total_points (
+    name TEXT PRIMARY KEY,
+    total_points INTEGER
+)
+''')
+conn.commit()
 
 # Create a new reaction for each new game
 game_date_str = last_game_date.replace(" ", "_")
@@ -319,9 +315,11 @@ st.subheader("חמשת האבדי-תגובות האחרונות")
 c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
 reactions = c.fetchall()
 for reaction in reactions:
+    name = reaction[0] if reaction[0] is not None else "Anonymous"
     rating = reaction[1] if reaction[1] is not None else 0
+    comment = reaction[2] if reaction[2] is not None else ""
     stars = '🌟' * rating
-    st.markdown(f"**{reaction[0]}**: {stars} ({rating} stars) - {reaction[2]}")
+    st.markdown(f"**{name}**: {stars} ({rating} stars) - {comment}")
     st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
