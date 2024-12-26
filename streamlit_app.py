@@ -279,8 +279,9 @@ else:
 # Calculate and display the average rating
 c.execute("SELECT rating FROM reactions WHERE game_date = ?", (game_date_str,))
 reactions = c.fetchall()
-if reactions:
-    average_rating = sum([r[0] for r in reactions]) / len(reactions)
+ratings = [r[0] for r in reactions if r[0] is not None]
+if ratings:
+    average_rating = sum(ratings) / len(ratings)
     st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
 else:
     st.markdown("No reactions yet.")
