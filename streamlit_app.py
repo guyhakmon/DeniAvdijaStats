@@ -310,19 +310,6 @@ if filtered_ratings:
 else:
     st.markdown("No reactions yet.")
 
-# Display the last 5 reactions in a compact way
-st.subheader("חמשת האבדי-תגובות האחרונות")
-c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
-reactions = c.fetchall()
-for reaction in reactions:
-    name = reaction[0]
-    rating = reaction[1]
-    comment = reaction[2] 
-    if name or rating or comment:  # Only display if there is content
-        stars = '🌟' * rating
-        st.markdown(f"**{name}**: {stars} ({rating} stars) - {comment}")
-        st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
-
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
 st.subheader("תן אבדי-תגובה למשחקו האחרון של דני")
 with st.expander("תן אבדי-תגובה למשחקו האחרון של דני", expanded=False):
@@ -373,6 +360,19 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
             
             st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
+
+# Display the last 5 reactions in a compact way
+st.subheader("חמשת האבדי-תגובות האחרונות")
+c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
+reactions = c.fetchall()
+for reaction in reactions:
+    name = reaction[0]
+    rating = reaction[1]
+    comment = reaction[2] 
+    if name or rating or comment:  # Only display if there is content
+        stars = '🌟' * rating
+        st.markdown(f"**{name}**: {stars} ({rating} stars) - {comment}")
+        st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Get Deni's next game details
 next_games = PlayerNextNGames(player_id=player_id, number_of_games=1)
