@@ -1,7 +1,7 @@
 import streamlit as st
 # Set the page configuration
 
-from nba_api.stats.endpoints import playercareerstats, playergamelog
+from nba_api.stats.endpoints import playercareerstats, playergamelog, PlayerNextNGames
 from nba_api.stats.static import players
 import plotly.graph_objects as go
 import pandas as pd
@@ -9,6 +9,7 @@ from pytube import Search
 import json
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
+import numpy as np
 import os
 import requests
 from nba_api.stats.endpoints import teamgamelog
@@ -161,10 +162,7 @@ if not os.path.exists(filename):
 current_season_stats = gamelog_stats[['GAME_DATE', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']]
 current_season_stats['GAME_DATE'] = pd.to_datetime(current_season_stats['GAME_DATE'])
 
-# Prepare the data for regression
-features = ['PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']
-X = current_season_stats[features].values[:-1]  # Use all games except the last one for training
-y = current_season_stats[features].values[1:]   # Use all games except the first one for target
+
 # Calculate average stats for the current season
 average_stats = current_season_stats.mean(numeric_only=True)[['PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']]
 
@@ -243,9 +241,9 @@ if video:
     video_url = video.watch_url
     video_thumbnail = video.thumbnail_url
     st.markdown(f"""
-        <h3 style="text-align:center; color:#FF6347;">Watch Deni Avdija's Highlights from {last_game_date}</h3>
+        <h4 style="text-align:center; color:#FF6347;">צפה בהיילייטס של דני אבדיה מהמשחק ב-{last_game_date}</h4>
         <a href="{video_url}" target="_blank">
-            <img src="{video_thumbnail}" alt="Watch Deni Avdija's highlights from the game on {last_game_date}" style="width:80%; border-radius:10px;">
+            <img src="{video_thumbnail}" alt="צפה בהיילייטס של דני אבדיה מהמשחק ב-{last_game_date}" style="width:70%; border-radius:10px;">
         </a>
     """, unsafe_allow_html=True)
 else:
@@ -277,7 +275,7 @@ else:
     st.markdown("No reactions yet.")
 
 # Display the last 5 reactions in a compact way
-st.subheader("חמשת האבדי-תגובות האבדי-אחרונות")
+st.subheader("חמשת האבדי-תגובות האחרונות")
 
 # Read the reactions from the file
 reactions = []
@@ -360,15 +358,76 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
             
             st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
+
+# Get Deni's next game details
+next_games = PlayerNextNGames(player_id=player_id, number_of_games=1)
+next_game_df = next_games.get_data_frames()[0]
+
+# Extract the next game details
+next_game_details = next_game_df.iloc[0]
+next_game_date = next_game_details['GAME_DATE']
+next_game_opponent = next_game_details.get('MATCHUP') 
+next_game_time = next_game_details['GAME_TIME']
+
+# Display the next game details in a more visually appealing way
+# Extract and display the next game details in a humorous Hebrew way
+next_game_details = next_game_df.iloc[0]
+next_game_date = next_game_details['GAME_DATE']
+next_game_time = next_game_details['GAME_TIME']
+home_team_name = next_game_details['HOME_TEAM_NAME']
+visitor_team_name = next_game_details['VISITOR_TEAM_NAME']
+home_team_abbr = next_game_details['HOME_TEAM_ABBREVIATION']
+visitor_team_abbr = next_game_details['VISITOR_TEAM_ABBREVIATION']
+home_team_nickname = next_game_details['HOME_TEAM_NICKNAME']
+visitor_team_nickname = next_game_details['VISITOR_TEAM_NICKNAME']
+home_wl = next_game_details['HOME_WL']
+visitor_wl = next_game_details['VISITOR_WL']
+
+st.markdown(f"""
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h3 style="text-align:center; color:#FF6347;">פרטי המשחק הבא של דני</h3>
+        <p><strong>תאריך:</strong> {next_game_date}</p>
+        <p><strong>שעה:</strong> {next_game_time}</p>
+        <p><strong>קבוצה מארחת:</strong> {home_team_name} ({home_team_abbr})</p>
+        <p><strong>קבוצה אורחת:</strong> {visitor_team_name} ({visitor_team_abbr})</p>
+        <p><strong>מאזן קבוצה מארחת:</strong> {home_wl}</p>
+        <p><strong>מאזן קבוצה אורחת:</strong> {visitor_wl}</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Predict next game performance based on stats and opponent team
+st.subheader("אבדי-חיזוי של ביצועיו של דני במשחק האבדי-בא")
+
+# Get the opponent team ID
+opponent_team_name = next_game_details['VISITOR_TEAM_NAME'] if next_game_details['HOME_TEAM_NAME'] == 'Washington Wizards' else next_game_details['HOME_TEAM_NAME']
+opponent_team = teams.find_teams_by_full_name(opponent_team_name)[0]
+opponent_team_id = opponent_team['id']
+
+# Get the opponent team's defensive stats for the current season
+opponent_gamelog = teamgamelog.TeamGameLog(team_id=opponent_team_id, season=current_season)
+opponent_stats = opponent_gamelog.get_data_frames()[0]
+
+# Calculate the opponent's average defensive stats
+opponent_avg_defensive_stats = opponent_stats[['PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']].mean()
+# Prepare the data for regression
+features = ['PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']
+X = np.concatenate((current_season_stats[features].values[:-1], opponent_avg_defensive_stats.values.reshape(1, -1).repeat(len(current_season_stats) - 1, axis=0)), axis=1)
+y = current_season_stats[features].values[1:]
+
+# Combine features for prediction
+combined_features = np.concatenate((X, opponent_avg_defensive_stats.values.reshape(1, -1).repeat(X.shape[0], axis=0)), axis=1)
+
 # Train the linear regression model
 model = LinearRegression()
 model.fit(X, y)
 
-# Predict next game performance based on stats
-st.subheader("אבדי-חיזוי של ביצועיו של דני במשחק האבדי-בא")
-# Predict the next game's performance
+# Prepare the data for prediction
 last_game_features = current_season_stats[features].values[-1].reshape(1, -1)
-predicted_stats = model.predict(last_game_features)[0]
+opponent_features = opponent_avg_defensive_stats.values.reshape(1, -1)
+combined_features = np.concatenate((last_game_features, opponent_features), axis=1)
+
+# Predict the next game's performance
+predicted_stats = model.predict(combined_features)[0]
 
 # Round the predicted stats to the nearest integer where appropriate
 predicted_points = round(predicted_stats[0])
@@ -460,113 +519,101 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
             
             st.success("Your guess has been saved!")
         
-        # Display Last 5 Guesses
-        st.subheader("חמשת האבדי-ניחושים האבדי-אחרונים")
-
-        # Read the guesses from the file
-        guesses = []
-        if os.path.exists(guess_filename):
-            with open(guess_filename, "r", encoding="utf-8") as f:
-                guess = {}
-                for line in f:
-                    if line.startswith("Name:"):
-                        if guess:
-                            guesses.append(guess)
-                        guess = {"name": line.split(":")[1].strip()}
-                    elif line.startswith("Guessed Points:"):
-                        guess["points"] = int(line.split(":")[1].strip())
-                    elif line.startswith("Guessed Rebounds:"):
-                        guess["rebounds"] = int(line.split(":")[1].strip())
-                    elif line.startswith("Guessed Assists:"):
-                        guess["assists"] = int(line.split(":")[1].strip())
-                    elif line.startswith("Guessed Steals:"):
-                        guess["steals"] = int(line.split(":")[1].strip())
-                    elif line.startswith("Guessed Blocks:"):
-                        guess["blocks"] = int(line.split(":")[1].strip())
-                    elif line.startswith("Guessed Field Goal Percentage:"):
-                        guess["fg_pct"] = float(line.split(":")[1].strip().replace('%', ''))
-                    elif line.startswith("Guessed Three-Point Percentage:"):
-                        guess["fg3_pct"] = float(line.split(":")[1].strip().replace('%', ''))
+# Display Last 5 Guesses
+st.subheader("חמשת האבדי-ניחושים האחרונים")
+guess_filename = f"guesses_{game_date_str}.txt"
+# Read the guesses from the file
+guesses = []
+if os.path.exists(guess_filename):
+    with open(guess_filename, "r", encoding="utf-8") as f:
+        guess = None
+        for line in f:
+            if line.startswith("Name:"):
                 if guess:
                     guesses.append(guess)
+                guess = {"name": line.split(":")[1].strip()}
+            elif line.startswith("Guessed Points:"):
+                guess["points"] = int(line.split(":")[1].strip())
+            elif line.startswith("Guessed Rebounds:"):
+                guess["rebounds"] = int(line.split(":")[1].strip())
+            elif line.startswith("Guessed Assists:"):
+                guess["assists"] = int(line.split(":")[1].strip())
+            elif line.startswith("Guessed Steals:"):
+                guess["steals"] = int(line.split(":")[1].strip())
+            elif line.startswith("Guessed Blocks:"):
+                guess["blocks"] = int(line.split(":")[1].strip())
+            elif line.startswith("Guessed Field Goal Percentage:"):
+                guess["fg_pct"] = float(line.split(":")[1].strip().replace('%', ''))
+            elif line.startswith("Guessed Three-Point Percentage:"):
+                guess["fg3_pct"] = float(line.split(":")[1].strip().replace('%', ''))
+        if guess:
+            guesses.append(guess)
 
-        # Limit to the last 5 guesses
-        guesses = guesses[-5:]
+# Limit to the last 5 guesses
+guesses = guesses[-5:]
+# Print the number of guesses
+st.write(f"Total number of guesses: {len(guesses)}")
+# Display each guess
+for guess in guesses:
+    st.write(f"**{guess['name']}**: PTS: {guess['points']}, REB: {guess['rebounds']}, AST: {guess['assists']}, STL: {guess['steals']}, BLK: {guess['blocks']}, FG%: {guess['fg_pct']:.2f}, 3P%: {guess['fg3_pct']:.2f}")
+    st.markdown("---")
 
-        # Display each guess
-        for guess in guesses:
-            st.markdown(f"**Name:** {guess['name']}")
-            st.markdown(f"**Guessed Points:** {guess['points']}")
-            st.markdown(f"**Guessed Rebounds:** {guess['rebounds']}")
-            st.markdown(f"**Guessed Assists:** {guess['assists']}")
-            st.markdown(f"**Guessed Steals:** {guess['steals']}")
-            st.markdown(f"**Guessed Blocks:** {guess['blocks']}")
-            st.markdown(f"**Guessed Field Goal Percentage:** {guess['fg_pct']:.2f}%")
-            st.markdown(f"**Guessed Three-Point Percentage:** {guess['fg3_pct']:.2f}%")
-            st.markdown("---")
+# Function to calculate points based on the accuracy of the guess
+def calculate_points(guess, actual):
+    points = 0
+    points += max(0, 10 - abs(guess["points"] - actual["points"]))
+    points += max(0, 10 - abs(guess["rebounds"] - actual["rebounds"]))
+    points += max(0, 10 - abs(guess["assists"] - actual["assists"]))
+    return points
 
-        # Function to calculate points based on the accuracy of the guess
-        def calculate_points(guess, actual):
-            points = 0
-            points += max(0, 10 - abs(guess["points"] - actual["points"]))
-            points += max(0, 10 - abs(guess["rebounds"] - actual["rebounds"]))
-            points += max(0, 10 - abs(guess["assists"] - actual["assists"]))
-            return points
+# Read the actual stats from a file or an API
+actual_stats = {
+    "points": 20,
+    "rebounds": 10,
+    "assists": 5
+}
 
-        # Read the actual stats from a file or an API
-        actual_stats = {
-            "points": 20,
-            "rebounds": 10,
-            "assists": 5
-        }
+# Get the current game date
+current_game_date = datetime.now().strftime("%Y-%m-%d")
 
-        # Get the current game date
-        current_game_date = datetime.now().strftime("%Y-%m-%d")
+# Check if points have already been calculated and stored
+points_filename = "points.json"
+if os.path.exists(points_filename):
+    with open(points_filename, "r", encoding="utf-8") as f:
+        points_data = json.load(f)
+else:
+    points_data = {}
 
-        # Check if points have already been calculated and stored
-        points_filename = "points.json"
-        if os.path.exists(points_filename):
-            with open(points_filename, "r", encoding="utf-8") as f:
-                points_data = json.load(f)
-        else:
-            points_data = {}
+# Calculate points if not already calculated for the current game
+if current_game_date not in points_data:
+    points_data[current_game_date] = {}
 
-        # Calculate points if not already calculated for the current game
-        if current_game_date not in points_data:
-            points_data[current_game_date] = {}
+for guess in guesses:
+    name = guess["name"]
+    if name not in points_data[current_game_date]:
+        points_data[current_game_date][name] = calculate_points(guess, actual_stats)
 
-        for guess in guesses:
-            name = guess["name"]
-            if name not in points_data[current_game_date]:
-                points_data[current_game_date][name] = calculate_points(guess, actual_stats)
+# Store the points data
+with open(points_filename, "w", encoding="utf-8") as f:
+    json.dump(points_data, f)
 
-        # Store the points data
-        with open(points_filename, "w", encoding="utf-8") as f:
-            json.dump(points_data, f)
+# Aggregate total points for each guesser
+total_points = {}
+for game_date, game_data in points_data.items():
+    for name, points in game_data.items():
+        if name not in total_points:
+            total_points[name] = 0
+        total_points[name] += points
 
-        # Aggregate total points for each guesser
-        total_points = {}
-        for game_date, game_data in points_data.items():
-            for name, points in game_data.items():
-                if name not in total_points:
-                    total_points[name] = 0
-                total_points[name] += points
+# Store the total points data
+total_points_filename = "total_points.json"
+with open(total_points_filename, "w", encoding="utf-8") as f:
+    json.dump(total_points, f)
 
-        # Store the total points data
-        total_points_filename = "total_points.json"
-        with open(total_points_filename, "w", encoding="utf-8") as f:
-            json.dump(total_points, f)
-
-        # Display the guesses with points
-        for guess in guesses:
-            name = guess["name"]
-            points_scored = points_data[current_game_date].get(name, 0)
-            st.write(f"Name: {name}, Points: {guess['points']}, Rebounds: {guess['rebounds']}, Assists: {guess['assists']}, Points Scored: {points_scored}")
-
-        # Display the total points for each guesser
-        st.subheader("אבדי-נקודות סופיות לכל מנחש")
-        for name, total in total_points.items():
-            st.write(f"Name: {name}, Total Points: {total}")
+# Display the total points for each guesser
+st.subheader("אבדי-נקודות סופיות לכל מנחש")
+for name, total in total_points.items():
+    st.write(f"שם: {name}, סך הכל נקודות: {total}")
 
 # Summarize stats
 st.write("אבדי-סיכום סטטיסטיקות קריירה")
