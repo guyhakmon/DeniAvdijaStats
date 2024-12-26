@@ -356,8 +356,7 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
             
             # Save the reaction and comment with the game date
             c.execute("INSERT INTO reactions (game_date, name, rating, comment) VALUES (?, ?, ?, ?)", (game_date_str, name, reaction, comment))
-            conn.commit()
-            
+            conn.commit()  # Commit the changes
             st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
 
@@ -371,7 +370,7 @@ for reaction in reactions:
     comment = reaction[2] 
     if name or rating or comment:  # Only display if there is content
         stars = '🌟' * rating
-        st.markdown(f"**{name}**: {stars} ({rating} stars) - {comment}")
+        st.markdown(f"**{name}**: {stars} - {comment}")
         st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
 # Get Deni's next game details
