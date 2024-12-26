@@ -155,51 +155,55 @@ db_path = os.path.join(os.getcwd(), 'deni_avdija_stats.db')
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
+# Check if the database file already exists
+db_exists = os.path.exists(db_path)
+
 # Create tables if they don't exist
-c.execute('''
-CREATE TABLE IF NOT EXISTS reactions (
-    id INTEGER PRIMARY KEY,
-    game_date TEXT,
-    name TEXT,
-    rating INTEGER,
-    comment TEXT
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS guesses (
-    id INTEGER PRIMARY KEY,
-    game_date TEXT,
-    name TEXT,
-    points INTEGER,
-    rebounds INTEGER,
-    assists INTEGER,
-    steals INTEGER,
-    blocks INTEGER,
-    fg_pct REAL,
-    fg3_pct REAL
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS names (
-    id INTEGER PRIMARY KEY,
-    name TEXT UNIQUE
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS points (
-    game_date TEXT,
-    name TEXT,
-    points INTEGER,
-    PRIMARY KEY (game_date, name)
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS total_points (
-    name TEXT PRIMARY KEY,
-    total_points INTEGER
-)
-''')
-conn.commit()
+if not db_exists:
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS reactions (
+        id INTEGER PRIMARY KEY,
+        game_date TEXT,
+        name TEXT,
+        rating INTEGER,
+        comment TEXT
+    )
+    ''')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS guesses (
+        id INTEGER PRIMARY KEY,
+        game_date TEXT,
+        name TEXT,
+        points INTEGER,
+        rebounds INTEGER,
+        assists INTEGER,
+        steals INTEGER,
+        blocks INTEGER,
+        fg_pct REAL,
+        fg3_pct REAL
+    )
+    ''')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS names (
+        id INTEGER PRIMARY KEY,
+        name TEXT UNIQUE
+    )
+    ''')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS points (
+        game_date TEXT,
+        name TEXT,
+        points INTEGER,
+        PRIMARY KEY (game_date, name)
+    )
+    ''')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS total_points (
+        name TEXT PRIMARY KEY,
+        total_points INTEGER
+    )
+    ''')
+    conn.commit()
 
 # Create a new reaction for each new game
 game_date_str = last_game_date.replace(" ", "_")
