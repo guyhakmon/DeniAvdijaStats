@@ -315,9 +315,9 @@ st.subheader("חמשת האבדי-תגובות האחרונות")
 c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
 reactions = c.fetchall()
 for reaction in reactions:
-    name = reaction[0] if reaction[0] is not None else "Anonymous"
-    rating = reaction[1] if reaction[1] is not None else 0
-    comment = reaction[2] if reaction[2] is not None else ""
+    name = reaction[0]
+    rating = reaction[1]
+    comment = reaction[2] 
     if name or rating or comment:  # Only display if there is content
         stars = '🌟' * rating
         st.markdown(f"**{name}**: {stars} ({rating} stars) - {comment}")
