@@ -16,6 +16,7 @@ from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
 import sqlite3
 from datetime import datetime, timedelta
+from pytz import timezone
 
 st.set_page_config(
     page_title='Maakabdi-App',
@@ -408,11 +409,22 @@ hours = seconds // 3600
 minutes = (seconds % 3600) // 60
 seconds = seconds % 60
 
+# Convert the next game datetime to Israel timezone
+israel_tz = timezone('Asia/Jerusalem')
+next_game_datetime_israel = next_game_datetime.astimezone(israel_tz)
+
+# Format the time remaining
+time_remaining = next_game_datetime_israel - datetime.now(israel_tz)
+days, seconds = time_remaining.days, time_remaining.seconds
+hours = seconds // 3600
+minutes = (seconds % 3600) // 60
+seconds = seconds % 60
+
 st.markdown(f"""
     <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
         <h3 style="text-align:center; color:#FF6347;">פרטי המשחק הבא של דני</h3>
-        <p><strong>תאריך:</strong> {next_game_date}</p>
-        <p><strong>שעה:</strong> {next_game_time}</p>
+        <p><strong>תאריך:</strong> {next_game_datetime_israel.strftime('%Y-%m-%d')}</p>
+        <p><strong>שעה:</strong> {next_game_datetime_israel.strftime('%H:%M:%S')}</p>
         <p><strong>קבוצה מארחת:</strong> {home_team_name} ({home_team_abbr})</p>
         <p><strong>קבוצה אורחת:</strong> {visitor_team_name} ({visitor_team_abbr})</p>
         <p><strong>מאזן קבוצה מארחת:</strong> {home_wl}</p>
