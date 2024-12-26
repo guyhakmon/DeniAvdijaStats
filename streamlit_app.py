@@ -151,12 +151,12 @@ last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %
 # Define the path for the SQLite database file
 db_path = os.path.join(os.getcwd(), 'deni_avdija_stats.db')
 
+# Check if the database file already exists
+db_exists = os.path.exists(db_path)
+
 # Initialize SQLite database
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
-
-# Check if the database file already exists
-db_exists = os.path.exists(db_path)
 
 # Create tables if they don't exist
 if not db_exists:
