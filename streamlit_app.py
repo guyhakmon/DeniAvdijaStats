@@ -387,7 +387,7 @@ next_game_time = next_game_details['GAME_TIME']
 # Display the next game details in a more visually appealing way
 # Extract and display the next game details in a humorous Hebrew way
 next_game_details = next_game_df.iloc[0]
-next_game_date = pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME'])+ timedelta(hours=7).strftime('%B %d, %Y')
+next_game_date = pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME'])+ timedelta(hours=7)
 home_team_name = next_game_details.get('HOME_TEAM_NAME')
 next_game_time = (pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME']) + timedelta(hours=7)).strftime('%H:%M')
 home_team_name = next_game_details['HOME_TEAM_NAME']
@@ -414,7 +414,7 @@ try:
     st.markdown(f"""
         <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <h3 style="text-align:center; color:#FF6347;">פרטי המשחק הבא של דני</h3>
-            <p><strong>תאריך:</strong> {next_game_date}</p>
+            <p><strong>תאריך:</strong> {next_game_date.date()}</p>
             <p><strong>שעה:</strong> {next_game_time}</p>
             <p><strong>קבוצה מארחת:</strong> {home_team_name} ({home_team_abbr})</p>
             <p><strong>קבוצה אורחת:</strong> {visitor_team_name} ({visitor_team_abbr})</p>
