@@ -274,6 +274,23 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     # Display the boxscore in a table
     st.subheader("תיבת התוצאות המלאה של המשחק האחרון")
     st.dataframe(boxscore_stats)
+    # Filter the boxscore to show only relevant columns
+    relevant_columns = ['PLAYER_NAME', 'TEAM_ABBREVIATION', 'MIN', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT']
+    boxscore_stats = boxscore_stats[relevant_columns]
+
+    # Split the boxscore into two DataFrames, one for each team
+    team1_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[0]
+    team2_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[1]
+
+    team1_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
+    team2_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
+
+    # Display the boxscore for each team
+    st.subheader(f"Boxscore for {team1_abbr}")
+    st.dataframe(team1_stats)
+
+    st.subheader(f"Boxscore for {team2_abbr}")
+    st.dataframe(team2_stats)
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
