@@ -305,13 +305,14 @@ if st.button("פתח את תיבת התוצאות המלאה"):
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
 
-# Check if points have already been calculated and stored
-points_filename = "points.json"
-if os.path.exists(points_filename):
-    with open(points_filename, "r", encoding="utf-8") as f:
-        points_data = json.load(f)
-else:
-    points_data = {}
+# Fetch points data from the database
+c.execute("SELECT game_date, name, points FROM points")
+points_data = {}
+for row in c.fetchall():
+    game_date, name, points = row
+    if game_date not in points_data:
+        points_data[game_date] = {}
+    points_data[game_date][name] = points
 
 # Get the last game date
 last_game_date_str = pd.to_datetime(last_game_stats['GAME_DATE']).strftime("%Y-%m-%d")
