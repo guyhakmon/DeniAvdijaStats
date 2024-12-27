@@ -280,21 +280,23 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     team2_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[1]
 
     if team1_abbr == 'POR':
-        portland_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
+        por_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
         other_team_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
+        other_team_name = teams.find_team_by_abbreviation(team2_abbr)['full_name']
     else:
-        portland_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
+        por_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
         other_team_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
+        other_team_name = teams.find_team_by_abbreviation(team1_abbr)['full_name']
 
     # Remove the TEAM_ABBREVIATION column
-    portland_stats = portland_stats.drop(columns=['TEAM_ABBREVIATION'])
+    por_stats = por_stats.drop(columns=['TEAM_ABBREVIATION'])
     other_team_stats = other_team_stats.drop(columns=['TEAM_ABBREVIATION'])
 
     # Display the boxscore for each team
-    st.subheader("תיבת תוצאות עבור פורטלנד")
-    st.dataframe(portland_stats)
+    st.subheader("תיבת תוצאות עבור פורטלנד טרייל בלייזרס")
+    st.dataframe(por_stats)
 
-    st.subheader(f"תיבת תוצאות עבור {other_team_stats['PLAYER_NAME'].iloc[0]}")
+    st.subheader(f"תיבת תוצאות עבור {other_team_name}")
     st.dataframe(other_team_stats)
 
     if st.button("סגור את תיבת התוצאות"):
