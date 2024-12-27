@@ -694,43 +694,46 @@ fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_s
 fig.update_layout(title='SPG and BPG Progress Over the Season', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
 
+# Add a section for users to choose the window size for the rolling average
+st.subheader("בחר את גודל החלון לממוצע נע")
+window_size = st.slider("Window Size", min_value=1, max_value=20, value=5)
 
-# Calculate rolling average for PPG, RPG, APG with a window of 5 games
-current_season_stats['Rolling_PPG'] = current_season_stats['PTS'].rolling(window=5).mean()
-current_season_stats['Rolling_RPG'] = current_season_stats['REB'].rolling(window=5).mean()
-current_season_stats['Rolling_APG'] = current_season_stats['AST'].rolling(window=5).mean()
+# Calculate rolling average for PPG, RPG, APG with the selected window size
+current_season_stats['Rolling_PPG'] = current_season_stats['PTS'].rolling(window=window_size).mean()
+current_season_stats['Rolling_RPG'] = current_season_stats['REB'].rolling(window=window_size).mean()
+current_season_stats['Rolling_APG'] = current_season_stats['AST'].rolling(window=window_size).mean()
 
 # Plot rolling average PPG, RPG, APG progress over the season
-st.write("אבדי-ממוצע נע PPG, RPG, APG לאורך העונה (5 משחקים)")
+st.write(f"אבדי-ממוצע נע PPG, RPG, APG לאורך העונה ({window_size} משחקים)")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_PPG'], mode='lines+markers', name='Rolling PPG', line=dict(color='green')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_RPG'], mode='lines+markers', name='Rolling RPG', line=dict(color='blue')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_APG'], mode='lines+markers', name='Rolling APG', line=dict(color='red')))
-fig.update_layout(title='Rolling Average PPG, RPG, APG Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+fig.update_layout(title=f'Rolling Average PPG, RPG, APG Progress Over the Season ({window_size} Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
 
-# Calculate rolling average FG% and 3P% with a window of 5 games
-current_season_stats['Rolling_FG_PCT'] = current_season_stats['FG_PCT'].rolling(window=5).mean()
-current_season_stats['Rolling_FG3_PCT'] = current_season_stats['FG3_PCT'].rolling(window=5).mean()
+# Calculate rolling average FG% and 3P% with the selected window size
+current_season_stats['Rolling_FG_PCT'] = current_season_stats['FG_PCT'].rolling(window=window_size).mean()
+current_season_stats['Rolling_FG3_PCT'] = current_season_stats['FG3_PCT'].rolling(window=window_size).mean()
 
 # Plot rolling average FG% and 3P% progress over the season
-st.write("אבדי-ממוצע נע FG% ו-3P% לאורך העונה (5 משחקים)")
+st.write(f"אבדי-ממוצע נע FG% ו-3P% לאורך העונה ({window_size} משחקים)")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_FG_PCT'], mode='lines+markers', name='Rolling FG%', line=dict(color='magenta')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_FG3_PCT'], mode='lines+markers', name='Rolling 3P%', line=dict(color='cyan')))
-fig.update_layout(title='Rolling Average FG% and 3P% Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Percentage')
+fig.update_layout(title=f'Rolling Average FG% and 3P% Progress Over the Season ({window_size} Games)', xaxis_title='Game Date', yaxis_title='Percentage')
 st.plotly_chart(fig)
 
-# Calculate rolling average SPG and BPG with a window of 5 games
-current_season_stats['Rolling_SPG'] = current_season_stats['STL'].rolling(window=5).mean()
-current_season_stats['Rolling_BPG'] = current_season_stats['BLK'].rolling(window=5).mean()
+# Calculate rolling average SPG and BPG with the selected window size
+current_season_stats['Rolling_SPG'] = current_season_stats['STL'].rolling(window=window_size).mean()
+current_season_stats['Rolling_BPG'] = current_season_stats['BLK'].rolling(window=window_size).mean()
 
 # Plot rolling average SPG and BPG progress over the season
-st.write("אבדי-ממוצע נע SPG ו-BPG לאורך העונה (5 משחקים)")
+st.write(f"אבדי-ממוצע נע SPG ו-BPG לאורך העונה ({window_size} משחקים)")
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_SPG'], mode='lines+markers', name='Rolling SPG', line=dict(color='orange')))
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_BPG'], mode='lines+markers', name='Rolling BPG', line=dict(color='purple')))
-fig.update_layout(title='Rolling Average SPG and BPG Progress Over the Season (5 Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
+fig.update_layout(title=f'Rolling Average SPG and BPG Progress Over the Season ({window_size} Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
 
 # Close the database connection
