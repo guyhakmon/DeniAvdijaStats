@@ -145,6 +145,15 @@ current_season = '2024-25'  # Update this to the current season
 gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=current_season)
 gamelog_stats = gamelog.get_data_frames()[0]
 
+# Get game logs for the Portland Trail Blazers
+team_id = teams.find_teams_by_full_name("Portland Trail Blazers")[0]['id']
+team_gamelog = teamgamelog.TeamGameLog(team_id=team_id, season=current_season)
+team_gamelog_stats = team_gamelog.get_data_frames()[0]
+
+# Display the team game log for the current season
+st.subheader("יומן משחקים של פורטלנד טרייל בלייזרס לעונה הנוכחית")
+st.dataframe(team_gamelog_stats)
+
 # Get stats for the last game
 last_game_stats = gamelog_stats.iloc[0]
 last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
@@ -264,7 +273,6 @@ st.dataframe(last_game_stats_df)
 
 if st.button("פתח את תיבת התוצאות המלאה"):
     st.dataframe(last_game_stats_df)
-    st.dataframe
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
