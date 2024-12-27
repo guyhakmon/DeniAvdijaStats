@@ -388,7 +388,7 @@ next_game_time = next_game_details['GAME_TIME']
 # Extract and display the next game details in a humorous Hebrew way
 next_game_details = next_game_df.iloc[0]
 next_game_date = pd.to_datetime((pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME']) + timedelta(hours=7)).strftime('%H:%M'))
-home_team_name = next_game_details['HOME_TEAM_NAME']
+home_team_name = next_game_details.get('HOME_TEAM_NAME')
 next_game_time = (pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME']) + timedelta(hours=7)).strftime('%H:%M')
 home_team_name = next_game_details['HOME_TEAM_NAME']
 visitor_team_name = next_game_details['VISITOR_TEAM_NAME']
