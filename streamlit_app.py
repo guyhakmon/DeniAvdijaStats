@@ -426,6 +426,8 @@ try:
 except ValueError as e:
     st.error(f"Error parsing date and time: {e}")
 
+
+next_game_date = next_game_details['GAME_DATE']
 # Predict next game performance based on stats and opponent team
 st.subheader("אבדי-חיזוי של ביצועיו של דני במשחק האבדי-בא")
 
