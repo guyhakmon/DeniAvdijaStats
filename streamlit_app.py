@@ -300,6 +300,12 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :] = por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :].applymap(lambda x: f"<span style='color:red;'>{x}</span>")
     other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :] = other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :].applymap(lambda x: f"<span style='color:red;'>{x}</span>")
 
+    # Convert the DataFrame to HTML
+    other_team_stats_html = other_team_stats.to_html(escape=False)
+
+    # Display the HTML content
+    st.markdown(other_team_stats_html, unsafe_allow_html=True)
+
     # Display the boxscore for each team
     st.subheader("תיבת תוצאות עבור פורטלנד טרייל בלייזרס")
     st.dataframe(por_stats)
