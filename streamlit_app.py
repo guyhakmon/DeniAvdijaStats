@@ -291,7 +291,9 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     # Remove the TEAM_ABBREVIATION column
     por_stats = por_stats.drop(columns=['TEAM_ABBREVIATION'])
     other_team_stats = other_team_stats.drop(columns=['TEAM_ABBREVIATION'])
-
+    # Round the 'MIN' column to the nearest integer
+    por_stats['MIN'] = por_stats['MIN'].round().astype(int)
+    other_team_stats['MIN'] = other_team_stats['MIN'].round().astype(int)
     # Display the boxscore for each team
     st.subheader("תיבת תוצאות עבור פורטלנד טרייל בלייזרס")
     st.dataframe(por_stats)
