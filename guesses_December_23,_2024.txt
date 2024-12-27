@@ -1,0 +1,20 @@
+Name: Guy
+Next Game Date: DEC 26, 2024
+Guessed Points: 11
+Guessed Rebounds: 8
+Guessed Assists: 3
+Guessed Steals: 1
+Guessed Blocks: 0
+Guessed Field Goal Percentage: 48.40%
+Guessed Three-Point Percentage: 37.20%
+
+Name: Guy
+Next Game Date: DEC 26, 2024
+Guessed Points: 10
+Guessed Rebounds: 8
+Guessed Assists: 3
+Guessed Steals: 1
+Guessed Blocks: 0
+Guessed Field Goal Percentage: 48.40%
+Guessed Three-Point Percentage: 37.20%
+
