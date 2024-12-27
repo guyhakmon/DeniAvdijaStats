@@ -16,6 +16,7 @@ from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
 import sqlite3
 from datetime import datetime, timedelta
+from nba_api.stats.endpoints import boxscoretraditionalv2
 
 st.set_page_config(
     page_title='Maakabdi-App',
@@ -145,14 +146,21 @@ current_season = '2024-25'  # Update this to the current season
 gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=current_season)
 gamelog_stats = gamelog.get_data_frames()[0]
 
-# Get game logs for the Portland Trail Blazers
-team_id = teams.find_teams_by_full_name("Portland Trail Blazers")[0]['id']
-team_gamelog = teamgamelog.TeamGameLog(team_id=team_id, season=current_season)
-team_gamelog_stats = team_gamelog.get_data_frames()[0]
+# Get the boxscore for the last game
 
-# Display the team game log for the current season
-st.subheader("יומן משחקים של פורטלנד טרייל בלייזרס לעונה הנוכחית")
-st.dataframe(team_gamelog_stats)
+# Get the game ID for the last game
+last_game_id = last_game_stats['Game_ID']
+
+# Fetch the boxscore for the last game
+boxscore = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=last_game_id)
+boxscore_stats = boxscore.get_data_frames()[0]
+
+# Filter the boxscore for Deni Avdija's stats
+deni_boxscore_stats = boxscore_stats[boxscore_stats['PLAYER_ID'] == player_id]
+
+# Display Deni Avdija's boxscore stats
+st.subheader("אבדי-סטטיסטיקות תיבת המשחק האחרון")
+st.dataframe(deni_boxscore_stats)
 
 # Get stats for the last game
 last_game_stats = gamelog_stats.iloc[0]
