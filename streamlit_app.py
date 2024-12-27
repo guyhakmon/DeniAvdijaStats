@@ -413,8 +413,8 @@ try:
     st.markdown(f"""
         <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <h3 style="text-align:center; color:#FF6347;">פרטי המשחק הבא של דני</h3>
-            <p><strong>תאריך:</strong> {next_game_date}</p>
-            <p><strong>שעה:</strong> {next_game_time}</p>
+            <p><strong>תאריך:</strong> {next_game_datetime}</p>
+            <p><strong>שעה:</strong> {next_game_datetime}</p>
             <p><strong>קבוצה מארחת:</strong> {home_team_name} ({home_team_abbr})</p>
             <p><strong>קבוצה אורחת:</strong> {visitor_team_name} ({visitor_team_abbr})</p>
             <p><strong>מאזן קבוצה מארחת:</strong> {home_wl}</p>
