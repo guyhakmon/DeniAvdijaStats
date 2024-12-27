@@ -282,9 +282,6 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     if team1_abbr == 'POR':
         por_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
         other_team_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
-        # Convert the 'MIN' column to a more readable format
-        por_stats['MIN'] = por_stats['MIN'].apply(lambda x: f"{int(float(x))}:{int((float(x) * 60) % 60):02d}")
-        other_team_stats['MIN'] = other_team_stats['MIN'].apply(lambda x: f"{int(float(x))}:{int((float(x) * 60) % 60):02d}")
         other_team_name = teams.find_team_by_abbreviation(team2_abbr)['full_name']
     else:
         por_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
@@ -294,10 +291,6 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     # Remove the TEAM_ABBREVIATION column
     por_stats = por_stats.drop(columns=['TEAM_ABBREVIATION'])
     other_team_stats = other_team_stats.drop(columns=['TEAM_ABBREVIATION'])
-    
-    # Round the MIN column to the nearest minute
-    por_stats['MIN'] = por_stats['MIN'].apply(lambda x: f"{int(float(x))}:{int((float(x) * 60) % 60):02d}")
-    other_team_stats['MIN'] = other_team_stats['MIN'].apply(lambda x: f"{int(float(x))}:{int((float(x) * 60) % 60):02d}")
 
     # Display the boxscore for each team
     st.subheader("תיבת תוצאות עבור פורטלנד טרייל בלייזרס")
