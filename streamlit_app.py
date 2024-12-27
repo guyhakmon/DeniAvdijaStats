@@ -1,7 +1,7 @@
 import streamlit as st
 # Set the page configuration
 
-from nba_api.stats.endpoints import playercareerstats, playergamelog, PlayerNextNGames
+from nba_api.stats.endpoints import playercareerstats, playergamelog, PlayerNextNGames, boxscoretraditionalv2
 from nba_api.stats.static import players
 import plotly.graph_objects as go
 import pandas as pd
@@ -16,7 +16,6 @@ from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
 import sqlite3
 from datetime import datetime, timedelta
-from nba_api.stats.endpoints import boxscoretraditionalv2
 
 st.set_page_config(
     page_title='Maakabdi-App',
@@ -146,22 +145,6 @@ current_season = '2024-25'  # Update this to the current season
 gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=current_season)
 gamelog_stats = gamelog.get_data_frames()[0]
 
-# Get the boxscore for the last game
-
-# Get the game ID for the last game
-last_game_id = last_game_stats['Game_ID']
-
-# Fetch the boxscore for the last game
-boxscore = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=last_game_id)
-boxscore_stats = boxscore.get_data_frames()[0]
-
-# Filter the boxscore for Deni Avdija's stats
-deni_boxscore_stats = boxscore_stats[boxscore_stats['PLAYER_ID'] == player_id]
-
-# Display Deni Avdija's boxscore stats
-st.subheader("אבדי-סטטיסטיקות תיבת המשחק האחרון")
-st.dataframe(deni_boxscore_stats)
-
 # Get stats for the last game
 last_game_stats = gamelog_stats.iloc[0]
 last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
@@ -280,7 +263,14 @@ last_game_stats_df = pd.DataFrame({
 st.dataframe(last_game_stats_df)
 
 if st.button("פתח את תיבת התוצאות המלאה"):
-    st.dataframe(last_game_stats_df)
+    # Get the boxscore for the last game
+
+    # Get the game ID for the last game
+    last_game_id = last_game_stats['Game_ID']
+
+    # Fetch the boxscore for the last game
+    boxscore = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=last_game_id)
+    boxscore_stats = boxscore.get_data_frames()[0]
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
