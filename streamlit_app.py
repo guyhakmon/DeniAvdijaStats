@@ -148,7 +148,6 @@ gamelog_stats = gamelog.get_data_frames()[0]
 # Get stats for the last game
 last_game_stats = gamelog_stats.iloc[0]
 last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
-last_game_stats = gamelog_stats[gamelog_stats['GAME_DATE'] == last_game_stats['GAME_DATE']].iloc[0]
 
 # Define the path for the SQLite database file
 db_path = os.path.join(os.getcwd(), 'deni_avdija_stats.db')
@@ -264,17 +263,8 @@ last_game_stats_df = pd.DataFrame({
 st.dataframe(last_game_stats_df)
 
 if st.button("פתח את תיבת התוצאות המלאה"):
-    # Get the full boxscore for the last game
-    team_id = last_game_stats['TEAM_ID']
-    team_gamelog = teamgamelog.TeamGameLog(team_id=team_id, season=current_season)
-    team_gamelog_stats = team_gamelog.get_data_frames()[0]
-
-    # Filter the boxscore for the last game
-    last_game_boxscore = team_gamelog_stats[team_gamelog_stats['GAME_ID'] == last_game_stats['GAME_ID']]
-
-    # Display the full boxscore in a table
-    st.subheader("תיבת התוצאות המלאה של המשחק האחרון")
-    st.dataframe(last_game_boxscore)
+    st.dataframe(last_game_stats_df)
+    st.dataframe
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
