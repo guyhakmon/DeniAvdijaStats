@@ -283,8 +283,8 @@ if st.button("פתח את תיבת התוצאות המלאה"):
         por_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
         other_team_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
         # Convert the 'MIN' column to a more readable format
-        por_stats['MIN'] = por_stats['MIN'].apply(lambda x: f"{int(x.split(':')[0])}m {int(x.split(':')[1])}s" if ':' in x else f"{int(float(x))}m")
-        other_team_stats['MIN'] = other_team_stats['MIN'].apply(lambda x: f"{int(x.split(':')[0])}m {int(x.split(':')[1])}s" if ':' in x else f"{int(float(x))}m")
+        por_stats['MIN'] = por_stats['MIN'].apply(lambda x: f"{int(float(x))}:{int((float(x) * 60) % 60):02d}" if '.' in x else x)
+        other_team_stats['MIN'] = other_team_stats['MIN'].apply(lambda x: f"{int(float(x))}:{int((float(x) * 60) % 60):02d}" if '.' in x else x)
         other_team_name = teams.find_team_by_abbreviation(team2_abbr)['full_name']
     else:
         por_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
