@@ -275,6 +275,9 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     relevant_columns = ['PLAYER_NAME', 'MIN', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT']
     boxscore_stats = boxscore_stats[['PLAYER_NAME', 'TEAM_ABBREVIATION'] + relevant_columns[1:]]
 
+    # Round the minutes to the nearest integer
+    boxscore_stats['MIN'] = boxscore_stats['MIN'].round()
+
     # Split the boxscore into two DataFrames, one for each team
     team1_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[0]
     team2_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[1]
@@ -291,6 +294,10 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     # Remove the TEAM_ABBREVIATION column
     por_stats = por_stats.drop(columns=['TEAM_ABBREVIATION'])
     other_team_stats = other_team_stats.drop(columns=['TEAM_ABBREVIATION'])
+
+    # Bold Deni Avdija's stats
+    por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :] = por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :].style.applymap(lambda x: 'font-weight: bold')
+    other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :] = other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :].style.applymap(lambda x: 'font-weight: bold')
 
     # Display the boxscore for each team
     st.subheader("תיבת תוצאות עבור פורטלנד טרייל בלייזרס")
