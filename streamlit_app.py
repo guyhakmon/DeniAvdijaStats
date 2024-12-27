@@ -262,9 +262,21 @@ last_game_stats_df = pd.DataFrame({
 # Display the last game stats in a table
 st.dataframe(last_game_stats_df)
 
-st.subheader("אבדי-תיבת תוצאות מלאה של המשחק האחרון")
 if st.button("פתח את תיבת התוצאות המלאה"):
-    st.dataframe(last_game_stats_df)
+    # Get the full game boxscore
+    game_id = last_game_stats['GAME_ID']
+    boxscore_url = f"https://stats.nba.com/stats/boxscoretraditionalv2?GameID={game_id}&StartPeriod=0&EndPeriod=0&StartRange=0&EndRange=0&RangeType=0"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+    }
+    response = requests.get(boxscore_url, headers=headers)
+    boxscore_data = response.json()
+    
+    # Extract the boxscore data
+    boxscore_df = pd.DataFrame(boxscore_data['resultSets'][0]['rowSet'], columns=boxscore_data['resultSets'][0]['headers'])
+    
+    # Display the full game boxscore in a table
+    st.dataframe(boxscore_df)
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
