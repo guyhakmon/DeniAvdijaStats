@@ -257,13 +257,14 @@ last_game_stats_df = pd.DataFrame({
     'Three-Point Field Goals Attempted': [last_game_stats['FG3A']]
 })
 
-# Option to open the full boxscore of the game
-st.subheader("אבדי-תיבת תוצאות מלאה של המשחק האחרון")
-if st.button("פתח את תיבת התוצאות המלאה"):
-    st.dataframe(last_game_stats_df)
+
 
 # Display the last game stats in a table
 st.dataframe(last_game_stats_df)
+
+st.subheader("אבדי-תיבת תוצאות מלאה של המשחק האחרון")
+if st.button("פתח את תיבת התוצאות המלאה"):
+    st.dataframe(last_game_stats_df)
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
