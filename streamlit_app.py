@@ -148,6 +148,7 @@ gamelog_stats = gamelog.get_data_frames()[0]
 # Get stats for the last game
 last_game_stats = gamelog_stats.iloc[0]
 last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
+last_game_stats = gamelog_stats[gamelog_stats['GAME_DATE'] == last_game_stats['GAME_DATE']].iloc[0]
 
 # Define the path for the SQLite database file
 db_path = os.path.join(os.getcwd(), 'deni_avdija_stats.db')
