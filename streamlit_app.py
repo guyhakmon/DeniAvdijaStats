@@ -388,7 +388,7 @@ next_game_time = next_game_details['GAME_TIME']
 # Extract and display the next game details in a humorous Hebrew way
 next_game_details = next_game_df.iloc[0]
 next_game_date = pd.to_datetime(next_game_details['GAME_DATE']).strftime('%d/%m/%Y')
-next_game_time = (pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME']) - timedelta(hours=17)).strftime('%H:%M')
+next_game_time = (pd.to_datetime(next_game_details['GAME_DATE'] + ' ' + next_game_details['GAME_TIME']) + timedelta(hours=7)).strftime('%H:%M')
 home_team_name = next_game_details['HOME_TEAM_NAME']
 visitor_team_name = next_game_details['VISITOR_TEAM_NAME']
 home_team_abbr = next_game_details['HOME_TEAM_ABBREVIATION']
@@ -401,7 +401,7 @@ visitor_wl = next_game_details['VISITOR_WL']
 # Calculate the time remaining until the next game in Israel's GMT+2 timezone
 try:
     next_game_datetime = datetime.strptime(f"{next_game_date} {next_game_time}", "%d/%m/%Y %H:%M")
-    next_game_datetime = next_game_datetime - timedelta(hours=17)  # Convert to Israel's GMT+2 timezone
+    next_game_datetime = next_game_datetime + timedelta(hours=7)  # Convert to Israel's GMT+2 timezone
     time_remaining = next_game_datetime - datetime.now()
 
     # Format the time remaining
