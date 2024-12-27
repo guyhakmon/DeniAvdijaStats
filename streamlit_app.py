@@ -271,6 +271,9 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     # Fetch the boxscore for the last game
     boxscore = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=last_game_id)
     boxscore_stats = boxscore.get_data_frames()[0]
+    # Display the boxscore in a table
+    st.subheader("תיבת התוצאות המלאה של המשחק האחרון")
+    st.dataframe(boxscore_stats)
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
