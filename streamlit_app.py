@@ -400,7 +400,7 @@ visitor_wl = next_game_details['VISITOR_WL']
 
 # Calculate the time remaining until the next game in Israel's GMT+2 timezone
 try:
-    next_game_datetime = datetime.strptime(f"{next_game_date} {next_game_time}", "%b %d, %Y %I:%M %p")
+    next_game_datetime = datetime.strptime(f"{next_game_date} {next_game_time}", "%d/%m/%Y %H:%M")
     next_game_datetime = next_game_datetime - timedelta(hours=7)  # Convert to Israel's GMT+2 timezone
     time_remaining = next_game_datetime - datetime.now()
 
