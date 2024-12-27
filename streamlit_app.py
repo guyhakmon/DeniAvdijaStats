@@ -297,7 +297,8 @@ if st.button("פתח את תיבת התוצאות המלאה"):
 
     # Bold Deni Avdija's stats
     por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :] = por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :].applymap(lambda x: f"**{x}**")
-    other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :] = other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :].style.applymap(lambda x: 'font-weight: bold')
+    por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :] = por_stats.loc[por_stats['PLAYER_NAME'] == 'Deni Avdija', :].applymap(lambda x: f"<span style='color:red;'>{x}</span>")
+    other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :] = other_team_stats.loc[other_team_stats['PLAYER_NAME'] == 'Deni Avdija', :].applymap(lambda x: f"<span style='color:red;'>{x}</span>")
 
     # Display the boxscore for each team
     st.subheader("תיבת תוצאות עבור פורטלנד טרייל בלייזרס")
