@@ -272,22 +272,33 @@ if st.button("פתח את תיבת התוצאות המלאה"):
     boxscore = boxscoretraditionalv2.BoxScoreTraditionalV2(game_id=last_game_id)
     boxscore_stats = boxscore.get_data_frames()[0]
     # Filter the boxscore to show only relevant columns
-    relevant_columns = ['PLAYER_NAME', 'TEAM_ABBREVIATION', 'MIN', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT']
-    boxscore_stats = boxscore_stats[relevant_columns]
+    relevant_columns = ['PLAYER_NAME', 'MIN', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT']
+    boxscore_stats = boxscore_stats[['PLAYER_NAME', 'TEAM_ABBREVIATION'] + relevant_columns[1:]]
 
     # Split the boxscore into two DataFrames, one for each team
     team1_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[0]
     team2_abbr = boxscore_stats['TEAM_ABBREVIATION'].unique()[1]
 
-    team1_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
-    team2_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
+    if team1_abbr == 'POR':
+        portland_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
+        other_team_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
+    else:
+        portland_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team2_abbr]
+        other_team_stats = boxscore_stats[boxscore_stats['TEAM_ABBREVIATION'] == team1_abbr]
 
-    # הצגת תיבת התוצאות עבור כל קבוצה
-    st.subheader(f"תיבת תוצאות עבור {team1_abbr}")
-    st.dataframe(team1_stats)
+    # Remove the TEAM_ABBREVIATION column
+    portland_stats = portland_stats.drop(columns=['TEAM_ABBREVIATION'])
+    other_team_stats = other_team_stats.drop(columns=['TEAM_ABBREVIATION'])
 
-    st.subheader(f"תיבת תוצאות עבור {team2_abbr}")
-    st.dataframe(team2_stats)
+    # Display the boxscore for each team
+    st.subheader("תיבת תוצאות עבור פורטלנד")
+    st.dataframe(portland_stats)
+
+    st.subheader(f"תיבת תוצאות עבור {other_team_stats['PLAYER_NAME'].iloc[0]}")
+    st.dataframe(other_team_stats)
+
+    if st.button("סגור את תיבת התוצאות"):
+        st.experimental_rerun()
 
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
