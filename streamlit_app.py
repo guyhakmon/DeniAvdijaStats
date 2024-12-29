@@ -163,6 +163,8 @@ def write_sheet(sheet_name, data):
         conn.update(worksheet=sheet_name, data=updated_data)
     except Exception as e:
         conn.create(worksheet=sheet_name, data=data)
+    # Clear the cache and reload the data
+    st.cache_data.clear()
 
 # Create a new reaction for each new game
 game_date_str = last_game_date.replace(" ", "_")
@@ -298,7 +300,6 @@ else:
     st.markdown("Highlights not available yet.")
 
 # Calculate and display the average rating
-st.cache_data.clear()
 reactions_df = read_sheet("reactions")
 ratings = reactions_df[reactions_df['game_date'] == game_date_str]['rating'].dropna().tolist()
 if ratings:
@@ -543,8 +544,6 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
         
 # Display Last 5 Guesses
 st.subheader("חמשת האבדי-ניחושים האחרונים")
-# Clear the cache and reload the data
-st.cache_data.clear()
 guesses_df = read_sheet("guesses")
 last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
 # Print the number of guesses
