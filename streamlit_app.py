@@ -6,16 +6,14 @@ from nba_api.stats.static import players
 import plotly.graph_objects as go
 import pandas as pd
 from pytube import Search
-import json
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 import numpy as np
-import os
-import requests
 from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
-import sqlite3
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine
+from streamlit_gsheets import GSheetsConnection
 
 st.set_page_config(
     page_title='Maakabdi-App',
@@ -127,6 +125,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 st.title("מעקבדי-דף")
 # Add a photo of Deni Avdija
 st.image("https://cdn.nba.com/headshots/nba/latest/1040x760/1630166.png", caption="Deni Avdija", width=300)
@@ -149,65 +148,25 @@ gamelog_stats = gamelog.get_data_frames()[0]
 last_game_stats = gamelog_stats.iloc[0]
 last_game_date = pd.to_datetime(last_game_stats['GAME_DATE']).strftime('%B %d, %Y')
 
-# Define the path for the SQLite database file
-db_path = os.path.join(os.getcwd(), 'deni_avdija_stats.db')
+# Initialize Google Sheets connection
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Initialize SQLite database
-conn = sqlite3.connect(db_path)
-c = conn.cursor()
+# Read data from Google Sheets
+def read_sheet(sheet_name):
+    return conn.read(worksheet=sheet_name)
 
-# Create tables if they don't exist
-c.execute('''
-CREATE TABLE IF NOT EXISTS reactions (
-    id INTEGER PRIMARY KEY,
-    game_date TEXT,
-    name TEXT,
-    rating INTEGER,
-    comment TEXT
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS guesses (
-    id INTEGER PRIMARY KEY,
-    game_date TEXT,
-    name TEXT,
-    points INTEGER,
-    rebounds INTEGER,
-    assists INTEGER,
-    steals INTEGER,
-    blocks INTEGER,
-    fg_pct REAL,
-    fg3_pct REAL
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS names (
-    id INTEGER PRIMARY KEY,
-    name TEXT UNIQUE
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS points (
-    game_date TEXT,
-    name TEXT,
-    points INTEGER,
-    PRIMARY KEY (game_date, name)
-)
-''')
-c.execute('''
-CREATE TABLE IF NOT EXISTS total_points (
-    name TEXT PRIMARY KEY,
-    total_points INTEGER
-)
-''')
-conn.commit()
+# Write data to Google Sheets
+def write_sheet(sheet_name, data):
+    try:
+        existing_data = conn.read(worksheet=sheet_name)
+        updated_data = pd.concat([existing_data, data], ignore_index=True)
+        conn.update(worksheet=sheet_name, data=updated_data)
+    except Exception as e:
+        conn.create(worksheet=sheet_name, data=data)
 
 # Create a new reaction for each new game
 game_date_str = last_game_date.replace(" ", "_")
-c.execute("SELECT COUNT(*) FROM reactions WHERE game_date = ?", (game_date_str,))
-if c.fetchone()[0] == 0:
-    c.execute("INSERT INTO reactions (game_date) VALUES (?)", (game_date_str,))
-    conn.commit()
+reactions_df = read_sheet("reactions")
 
 # Summarize current season stats
 current_season_stats = gamelog_stats[['GAME_DATE', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'FG_PCT', 'FG3_PCT']]
@@ -305,14 +264,9 @@ if st.button("פתח את תיבת התוצאות המלאה"):
 # Display the guessers' points for this game
 st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון")
 
-# Fetch points data from the database
-c.execute("SELECT game_date, name, points FROM points")
-points_data = {}
-for row in c.fetchall():
-    game_date, name, points = row
-    if game_date not in points_data:
-        points_data[game_date] = {}
-    points_data[game_date][name] = points
+# Fetch points data from Google Sheets
+points_df = read_sheet("points")
+points_data = points_df.set_index('game_date').to_dict('index')
 
 # Get the last game date
 last_game_date_str = pd.to_datetime(last_game_stats['GAME_DATE']).strftime("%Y-%m-%d")
@@ -344,12 +298,11 @@ else:
     st.markdown("Highlights not available yet.")
 
 # Calculate and display the average rating
-c.execute("SELECT rating FROM reactions WHERE game_date = ?", (game_date_str,))
-reactions = c.fetchall()
-ratings = [r[0] for r in reactions if r[0] is not None]
-filtered_ratings = [rating for rating in ratings if rating is not None]
-if filtered_ratings:
-    average_rating = sum(filtered_ratings) / len(filtered_ratings)
+st.cache_data.clear()
+reactions_df = read_sheet("reactions")
+ratings = reactions_df[reactions_df['game_date'] == game_date_str]['rating'].dropna().tolist()
+if ratings:
+    average_rating = sum(ratings) / len(ratings)
     st.markdown(f"**Average Rating:** {'🌟' * int(average_rating)} {average_rating:.2f} stars")
 else:
     st.markdown("No reactions yet.")
@@ -357,9 +310,9 @@ else:
 # Add a reaction to the last game stats with stars, option to comment, and identify by name
 st.subheader("תן אבדי-תגובה למשחקו האחרון של דני")
 with st.expander("תן אבדי-תגובה למשחקו האחרון של דני", expanded=False):
-    # Load existing names from the database
-    c.execute("SELECT name FROM names")
-    names = [row[0] for row in c.fetchall()]
+    # Load existing names from Google Sheets
+    names_df = read_sheet("names")
+    names = names_df['name'].tolist()
 
     # Dropdown to select a name from the list
     selected_name = st.selectbox("Select your name", options=names, key="selectbox_name")
@@ -369,9 +322,9 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
 
     if new_name:
         if new_name not in names:
-            names.append(new_name)
-            c.execute("INSERT INTO names (name) VALUES (?)", (new_name,))
-            conn.commit()
+            new_name_df = pd.DataFrame({"name": [new_name]})
+            
+            write_sheet("names", new_name_df)
         selected_name = new_name
 
     name = selected_name
@@ -399,21 +352,21 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
                 st.write("**האבדי-תגובה שלך:**", comment)
             
             # Save the reaction and comment with the game date
-            c.execute("INSERT INTO reactions (game_date, name, rating, comment) VALUES (?, ?, ?, ?)", (game_date_str, name, reaction, comment))
-            conn.commit()  # Commit the changes
+            new_reaction = pd.DataFrame({"game_date": [game_date_str], "name": [name], "rating": [reaction], "comment": [comment]})
+            reactions_df = pd.concat([reactions_df, new_reaction], ignore_index=True)
+            write_sheet("reactions", reactions_df)
             st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
 
 # Display the last 5 reactions in a compact way
 st.subheader("חמשת האבדי-תגובות האחרונות")
-c.execute("SELECT name, rating, comment FROM reactions WHERE game_date = ? ORDER BY id DESC LIMIT 5", (game_date_str,))
-reactions = c.fetchall()
-for reaction in reactions:
-    name = reaction[0]
-    rating = reaction[1]
-    comment = reaction[2] 
+last_reactions = reactions_df[reactions_df['game_date'] == game_date_str].tail(5)
+for _, reaction in last_reactions.iterrows():
+    name = reaction['name']
+    rating = reaction['rating']
+    comment = reaction['comment'] 
     if name or rating or comment:  # Only display if there is content
-        stars = '🌟' * rating
+        stars = '🌟' * int(rating)
         st.markdown(f"**{name}**: {stars} - {comment}")
         st.markdown("<hr style='border: 1px solid #ddd;'>", unsafe_allow_html=True)
 
@@ -551,8 +504,9 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
     if new_name:
         if new_name not in names:
             names.append(new_name)
-            c.execute("INSERT INTO names (name) VALUES (?)", (new_name,))
-            conn.commit()
+            new_name_df = pd.DataFrame({"name": [new_name]})
+            names_df = pd.concat([names_df, new_name_df], ignore_index=True)
+            write_sheet("names", names_df)
         selected_name = new_name
 
     name = selected_name
@@ -571,20 +525,31 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
             st.markdown(f"**Guessed Three-Point Percentage:** {guessed_fg3_pct:.2f}%")
             
             # Save the guess with the name of the guesser and the date of the next game
-            c.execute("INSERT INTO guesses (game_date, name, points, rebounds, assists, steals, blocks, fg_pct, fg3_pct) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (next_game_date, name, guessed_points, guessed_rebounds, guessed_assists, guessed_steals, guessed_blocks, guessed_fg_pct, guessed_fg3_pct))
-            conn.commit()
-            
+            new_guess = pd.DataFrame({
+                "game_date": [next_game_date],
+                "name": [name],
+                "points": [guessed_points],
+                "rebounds": [guessed_rebounds],
+                "assists": [guessed_assists],
+                "steals": [guessed_steals],
+                "blocks": [guessed_blocks],
+                "fg_pct": [guessed_fg_pct],
+                "fg3_pct": [guessed_fg3_pct]
+            })
+            guesses_df = read_sheet("guesses")
+            guesses_df = pd.concat([guesses_df, new_guess], ignore_index=True)
+            write_sheet("guesses", guesses_df)
             st.success("Your guess has been saved!")
         
 # Display Last 5 Guesses
 st.subheader("חמשת האבדי-ניחושים האחרונים")
-c.execute("SELECT name, points, rebounds, assists, steals, blocks, fg_pct, fg3_pct FROM guesses WHERE game_date = ? ORDER BY id DESC LIMIT 5", (next_game_date,))
-guesses = c.fetchall()
+guesses_df = read_sheet("guesses")
+last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
 # Print the number of guesses
-st.write(f"Total number of guesses: {len(guesses)}")
+st.write(f"Total number of guesses: {len(last_guesses)}")
 # Display each guess
-for guess in guesses:
-    st.write(f"**{guess[0]}**: PTS: {guess[1]}, REB: {guess[2]}, AST: {guess[3]}, STL: {guess[4]}, BLK: {guess[5]}, FG%: {guess[6]:.2f}, 3P%: {guess[7]:.2f}")
+for _, guess in last_guesses.iterrows():
+    st.write(f"**{guess['name']}**: PTS: {guess['points']}, REB: {guess['rebounds']}, AST: {guess['assists']}, STL: {guess['steals']}, BLK: {guess['blocks']}, FG%: {guess['fg_pct']:.2f}, 3P%: {guess['fg3_pct']:.2f}")
     st.markdown("---")
 
 # Function to calculate points based on the accuracy of the guess
@@ -606,32 +571,33 @@ actual_stats = {
 current_game_date = datetime.now().strftime("%Y-%m-%d")
 
 # Calculate points if not already calculated for the current game
-c.execute("SELECT name, points, rebounds, assists FROM guesses WHERE game_date = ?", (current_game_date,))
-guesses = c.fetchall()
-for guess in guesses:
-    name = guess[0]
+guesses_df = read_sheet("guesses")
+current_game_guesses = guesses_df[guesses_df['game_date'] == current_game_date]
+points_df = read_sheet("points")
+for _, guess in current_game_guesses.iterrows():
+    name = guess['name']
     guess_dict = {
-        "points": guess[1] if guess[1] is not None else 0,
-        "rebounds": guess[2] if guess[2] is not None else 0,
-        "assists": guess[3] if guess[3] is not None else 0
+        "points": guess['points'] if guess['points'] is not None else 0,
+        "rebounds": guess['rebounds'] if guess['rebounds'] is not None else 0,
+        "assists": guess['assists'] if guess['assists'] is not None else 0
     }
     points = calculate_points(guess_dict, actual_stats)
-    c.execute("INSERT INTO points (game_date, name, points) VALUES (?, ?, ?) ON CONFLICT(game_date, name) DO UPDATE SET points = ?", (current_game_date, name, points, points))
-    conn.commit()
+    new_point = pd.DataFrame({"game_date": [current_game_date], "name": [name], "points": [points]})
+    points_df = pd.concat([points_df, new_point], ignore_index=True)
+    write_sheet("points", points_df)
 
 # Aggregate total points for each guesser
-c.execute("SELECT name, SUM(points) FROM points GROUP BY name")
-total_points = c.fetchall()
-for name, total in total_points:
-    c.execute("INSERT INTO total_points (name, total_points) VALUES (?, ?) ON CONFLICT(name) DO UPDATE SET total_points = ?", (name, total, total))
-    conn.commit()
+total_points_df = points_df.groupby('name')['points'].sum().reset_index()
+total_points_df.columns = ['name', 'total_points']
+if not total_points_df.empty:
+    write_sheet("total_points", total_points_df)
+else:
+    st.warning("No total points data to write.")
 
 # Display the total points for each guesser
 st.subheader("אבדי-נקודות סופיות לכל מנחש")
-c.execute("SELECT name, total_points FROM total_points")
-total_points = c.fetchall()
-for name, total in total_points:
-    st.write(f"שם: {name}, סך הכל נקודות: {total}")
+for _, row in total_points_df.iterrows():
+    st.write(f"שם: {row['name']}, סך הכל נקודות: {row['total_points']}")
 
 # Summarize stats
 st.write("אבדי-סיכום סטטיסטיקות קריירה")
@@ -778,7 +744,3 @@ fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_s
 fig.add_trace(go.Scatter(x=current_season_stats['GAME_DATE'], y=current_season_stats['Rolling_BPG'], mode='lines+markers', name='Rolling BPG', line=dict(color='purple')))
 fig.update_layout(title=f'Rolling Average SPG and BPG Progress Over the Season ({window_size} Games)', xaxis_title='Game Date', yaxis_title='Per Game Stats')
 st.plotly_chart(fig)
-
-# Close the database connection
-conn.close()
-
