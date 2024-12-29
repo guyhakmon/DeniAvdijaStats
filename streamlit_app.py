@@ -543,6 +543,8 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
         
 # Display Last 5 Guesses
 st.subheader("חמשת האבדי-ניחושים האחרונים")
+# Clear the cache and reload the data
+st.cache_data.clear()
 guesses_df = read_sheet("guesses")
 last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
 # Print the number of guesses
