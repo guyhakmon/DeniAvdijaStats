@@ -338,25 +338,29 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
         if not name:
             st.error("Please enter your name.")
         else:
-            if reaction == 5:
-                st.write("🌟🌟🌟🌟🌟 המשחק היה אבדי-מושלם!!")
-            elif reaction == 4:
-                st.write("🌟🌟🌟🌟 משחק טובדי-מאוד")
-            elif reaction == 3:
-                st.write("🌟🌟🌟 הפעם הוא היה אבדי-ממוצע")
-            elif reaction == 2:
-                st.write("🌟🌟 משחק מתחת לאבדי-ממוצע")
+            # Check if the user has already submitted a reaction for this game
+            if not reactions_df[(reactions_df['game_date'] == game_date_str) & (reactions_df['name'] == name)].empty:
+                st.error("You have already submitted a reaction for this game.")
             else:
-                st.write("🌟 משחק אבדון")
-            
-            if comment:
-                st.write("**האבדי-תגובה שלך:**", comment)
-            
-            # Save the reaction and comment with the game date
-            new_reaction = pd.DataFrame({"game_date": [game_date_str], "name": [name], "rating": [reaction], "comment": [comment]})
-            reactions_df = pd.concat([reactions_df, new_reaction], ignore_index=True)
-            write_sheet("reactions", reactions_df)
-            st.success("האבדי-תגובה שלך למשחק נשמרה!")
+                if reaction == 5:
+                    st.write("🌟🌟🌟🌟🌟 המשחק היה אבדי-מושלם!!")
+                elif reaction == 4:
+                    st.write("🌟🌟🌟🌟 משחק טובדי-מאוד")
+                elif reaction == 3:
+                    st.write("🌟🌟🌟 הפעם הוא היה אבדי-ממוצע")
+                elif reaction == 2:
+                    st.write("🌟🌟 משחק מתחת לאבדי-ממוצע")
+                else:
+                    st.write("🌟 משחק אבדון")
+                
+                if comment:
+                    st.write("**האבדי-תגובה שלך:**", comment)
+                
+                # Save the reaction and comment with the game date
+                new_reaction = pd.DataFrame({"game_date": [game_date_str], "name": [name], "rating": [reaction], "comment": [comment]})
+                reactions_df = pd.concat([reactions_df, new_reaction], ignore_index=True)
+                write_sheet("reactions", reactions_df)
+                st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
 
 # Display the last 5 reactions in a compact way
@@ -516,31 +520,34 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
         if not name:
             st.error("Please enter your name.")
         else:
-            st.write("Your guess has been submitted!")
-            st.markdown(f"**Guessed Points:** {guessed_points}")
-            st.markdown(f"**Guessed Rebounds:** {guessed_rebounds}")
-            st.markdown(f"**Guessed Assists:** {guessed_assists}")
-            st.markdown(f"**Guessed Steals:** {guessed_steals}")
-            st.markdown(f"**Guessed Blocks:** {guessed_blocks}")
-            st.markdown(f"**Guessed Field Goal Percentage:** {guessed_fg_pct:.2f}%")
-            st.markdown(f"**Guessed Three-Point Percentage:** {guessed_fg3_pct:.2f}%")
-            
-            # Save the guess with the name of the guesser and the date of the next game
-            new_guess = pd.DataFrame({
-                "game_date": [next_game_date],
-                "name": [name],
-                "points": [guessed_points],
-                "rebounds": [guessed_rebounds],
-                "assists": [guessed_assists],
-                "steals": [guessed_steals],
-                "blocks": [guessed_blocks],
-                "fg_pct": [guessed_fg_pct],
-                "fg3_pct": [guessed_fg3_pct]
-            })
-            guesses_df = read_sheet("guesses")
-            guesses_df = pd.concat([guesses_df, new_guess], ignore_index=True)
-            write_sheet("guesses", guesses_df)
-            st.success("Your guess has been saved!")
+            # Check if the user has already submitted a guess for the next game
+            if not guesses_df[(guesses_df['game_date'] == next_game_date) & (guesses_df['name'] == name)].empty:
+                st.error("You have already submitted a guess for this game.")
+            else:
+                st.write("Your guess has been submitted!")
+                st.markdown(f"**Guessed Points:** {guessed_points}")
+                st.markdown(f"**Guessed Rebounds:** {guessed_rebounds}")
+                st.markdown(f"**Guessed Assists:** {guessed_assists}")
+                st.markdown(f"**Guessed Steals:** {guessed_steals}")
+                st.markdown(f"**Guessed Blocks:** {guessed_blocks}")
+                st.markdown(f"**Guessed Field Goal Percentage:** {guessed_fg_pct:.2f}%")
+                st.markdown(f"**Guessed Three-Point Percentage:** {guessed_fg3_pct:.2f}%")
+                
+                # Save the guess with the name of the guesser and the date of the next game
+                new_guess = pd.DataFrame({
+                    "game_date": [next_game_date],
+                    "name": [name],
+                    "points": [guessed_points],
+                    "rebounds": [guessed_rebounds],
+                    "assists": [guessed_assists],
+                    "steals": [guessed_steals],
+                    "blocks": [guessed_blocks],
+                    "fg_pct": [guessed_fg_pct],
+                    "fg3_pct": [guessed_fg3_pct]
+                })
+                guesses_df = pd.concat([guesses_df, new_guess], ignore_index=True)
+                write_sheet("guesses", guesses_df)
+                st.success("Your guess has been saved!")
         
 # Display Last 5 Guesses
 st.subheader("חמשת האבדי-ניחושים האחרונים")
