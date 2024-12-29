@@ -358,7 +358,12 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
                     st.write("**האבדי-תגובה שלך:**", comment)
                 
                 # Save the reaction and comment with the game date
-                new_reaction = pd.DataFrame({"game_date": [game_date_str], "name": [name], "rating": [reaction], "comment": [comment]})
+                new_reaction = pd.DataFrame({
+                    "game_date": [game_date_str], 
+                    "name": [name],
+                    "rating": [reaction], 
+                    "comment": [comment]
+                })
                 reactions_df = pd.concat([reactions_df, new_reaction], ignore_index=True)
                 write_sheet("reactions", reactions_df)
                 st.success("האבדי-תגובה שלך למשחק נשמרה!")
