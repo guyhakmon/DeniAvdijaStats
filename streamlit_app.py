@@ -248,12 +248,7 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
 
     # Option to add a new name
     new_name = st.text_input("Or add a new name", key="new_name_input")
-
     if new_name:
-        if new_name not in names:
-            new_name_df = pd.DataFrame({"name": [new_name]})
-            names_df = new_name_df
-            write_sheet("names", names_df)
         selected_name = new_name
 
     name = selected_name
@@ -292,6 +287,11 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
                     "comment": [comment]
                 })
                 reactions_df =  new_reaction
+                if new_name:
+                    if new_name not in names:
+                        new_name_df = pd.DataFrame({"name": [new_name]})
+                        names_df = new_name_df
+                        write_sheet("names", names_df)
                 write_sheet("reactions", reactions_df)
                 st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
