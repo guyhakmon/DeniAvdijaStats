@@ -323,9 +323,10 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
 
     if new_name:
         if new_name not in names:
+            names.append(new_name)
             new_name_df = pd.DataFrame({"name": [new_name]})
-            
-            write_sheet("names", new_name_df)
+            names_df = pd.concat([names_df, new_name_df], ignore_index=True)
+            write_sheet("names", names_df)
         selected_name = new_name
 
     name = selected_name
@@ -488,6 +489,9 @@ st.dataframe(predicted_stats_df)
 
 # Add a section for users to guess Deni's next game stats
 st.subheader("נחש את ביצועיו של דני במשחק האבדי-בא")
+
+# Read guesses data from Google Sheets
+guesses_df = read_sheet("guesses")
 
 # Ask if the user wants to guess the next game stats
 with st.expander("נחש את ביצועיו של דני במשחק האבדי-בא", expanded=False):
