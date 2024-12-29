@@ -554,7 +554,7 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
                     "fg_pct": [guessed_fg_pct],
                     "fg3_pct": [guessed_fg3_pct]
                 })
-                guesses_df = pd.concat([guesses_df, new_guess], ignore_index=True)
+                guesses_df = new_guess
                 write_sheet("guesses", guesses_df)
                 st.success("Your guess has been saved!")
         
