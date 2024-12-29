@@ -251,10 +251,7 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
 
     if new_name:
         if new_name not in names:
-            names.append(new_name)
-            new_name_df = pd.DataFrame({"name": [new_name]})
-            names_df = new_name_df
-            write_sheet("names", names_df)
+            write_sheet("names", new_name)
         selected_name = new_name
 
     name = selected_name
