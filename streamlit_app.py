@@ -364,7 +364,7 @@ with st.expander("תן אבדי-תגובה למשחקו האחרון של דני
                     "rating": [reaction], 
                     "comment": [comment]
                 })
-                reactions_df = pd.concat([reactions_df, new_reaction], ignore_index=True)
+                reactions_df =  new_reaction
                 write_sheet("reactions", reactions_df)
                 st.success("האבדי-תגובה שלך למשחק נשמרה!")
 
