@@ -495,12 +495,6 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
 st.subheader("חמשת האבדי-ניחושים האחרונים")
 guesses_df = read_sheet("guesses")
 last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
-# Print the number of guesses
-st.write(f"Total number of guesses: {len(last_guesses)}")
-# Display each guess
-for _, guess in last_guesses.iterrows():
-    st.write(f"**{guess['name']}**: PTS: {guess['points']}, REB: {guess['rebounds']}, AST: {guess['assists']}, STL: {guess['steals']}, BLK: {guess['blocks']}, FGM: {guess['fgm']}, FGA: {guess['fga']}, 3PM: {guess['fg3m']}, 3PA: {guess['fg3a']}")
-    st.markdown("---")
 
 # Function to calculate points based on the accuracy of the guess
 def calculate_points(guess, actual):
