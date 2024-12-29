@@ -434,8 +434,10 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
     guessed_assists = st.number_input("Guess Assists", min_value=0, max_value=50, value=predicted_assists)
     guessed_steals = st.number_input("Guess Steals", min_value=0, max_value=20, value=predicted_steals)
     guessed_blocks = st.number_input("Guess Blocks", min_value=0, max_value=20, value=predicted_blocks)
-    guessed_fg_pct = st.number_input("Guess Field Goal Percentage", min_value=0.0, max_value=100.0, value=predicted_fg_pct)
-    guessed_fg3_pct = st.number_input("Guess Three-Point Percentage", min_value=0.0, max_value=100.0, value=predicted_fg3_pct)
+    guessed_fgm = st.number_input("Guess Field Goals Made", min_value=0, max_value=50, value=round(predicted_fg_pct / 100 * predicted_points))
+    guessed_fga = st.number_input("Guess Field Goals Attempted", min_value=0, max_value=50, value=round(predicted_fg_pct / 100 * predicted_points * 1.5))
+    guessed_fg3m = st.number_input("Guess Three-Point Field Goals Made", min_value=0, max_value=50, value=round(predicted_fg3_pct / 100 * predicted_points))
+    guessed_fg3a = st.number_input("Guess Three-Point Field Goals Attempted", min_value=0, max_value=50, value=round(predicted_fg3_pct / 100 * predicted_points * 1.5))
 
     # Dropdown to select a name from the list
     selected_name = st.selectbox("Select your name", options=names)
@@ -467,8 +469,10 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
                 st.markdown(f"**Guessed Assists:** {guessed_assists}")
                 st.markdown(f"**Guessed Steals:** {guessed_steals}")
                 st.markdown(f"**Guessed Blocks:** {guessed_blocks}")
-                st.markdown(f"**Guessed Field Goal Percentage:** {guessed_fg_pct:.2f}%")
-                st.markdown(f"**Guessed Three-Point Percentage:** {guessed_fg3_pct:.2f}%")
+                st.markdown(f"**Guessed Field Goals Made:** {guessed_fgm}")
+                st.markdown(f"**Guessed Field Goals Attempted:** {guessed_fga}")
+                st.markdown(f"**Guessed Three-Point Field Goals Made:** {guessed_fg3m}")
+                st.markdown(f"**Guessed Three-Point Field Goals Attempted:** {guessed_fg3a}")
                 
                 # Save the guess with the name of the guesser and the date of the next game
                 new_guess = pd.DataFrame({
@@ -479,13 +483,15 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
                     "assists": [guessed_assists],
                     "steals": [guessed_steals],
                     "blocks": [guessed_blocks],
-                    "fg_pct": [guessed_fg_pct],
-                    "fg3_pct": [guessed_fg3_pct]
+                    "fgm": [guessed_fgm],
+                    "fga": [guessed_fga],
+                    "fg3m": [guessed_fg3m],
+                    "fg3a": [guessed_fg3a]
                 })
                 guesses_df = new_guess
                 write_sheet("guesses", guesses_df)
                 st.success("Your guess has been saved!")
-        
+
 # Display Last 5 Guesses
 st.subheader("חמשת האבדי-ניחושים האחרונים")
 guesses_df = read_sheet("guesses")
@@ -494,42 +500,103 @@ last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
 st.write(f"Total number of guesses: {len(last_guesses)}")
 # Display each guess
 for _, guess in last_guesses.iterrows():
-    st.write(f"**{guess['name']}**: PTS: {guess['points']}, REB: {guess['rebounds']}, AST: {guess['assists']}, STL: {guess['steals']}, BLK: {guess['blocks']}, FG%: {guess['fg_pct']:.2f}, 3P%: {guess['fg3_pct']:.2f}")
+    st.write(f"**{guess['name']}**: PTS: {guess['points']}, REB: {guess['rebounds']}, AST: {guess['assists']}, STL: {guess['steals']}, BLK: {guess['blocks']}, FGM: {guess['fgm']}, FGA: {guess['fga']}, 3PM: {guess['fg3m']}, 3PA: {guess['fg3a']}")
     st.markdown("---")
 
 # Function to calculate points based on the accuracy of the guess
 def calculate_points(guess, actual):
     points = 0
+    # Basic stats (up to 10 points each)
     points += max(0, 10 - abs(guess["points"] - actual["points"]))
     points += max(0, 10 - abs(guess["rebounds"] - actual["rebounds"]))
     points += max(0, 10 - abs(guess["assists"] - actual["assists"]))
+    points += max(0, 10 - abs(guess["steals"] - actual["steals"]))
+    points += max(0, 10 - abs(guess["blocks"] - actual["blocks"]))
+    
+    # Shooting stats (up to 15 points each)
+    points += max(0, 15 - 3 * abs(guess["fgm"] - actual["fgm"]))
+    points += max(0, 15 - 3 * abs(guess["fga"] - actual["fga"]))
+    points += max(0, 15 - 3 * abs(guess["fg3m"] - actual["fg3m"]))
+    points += max(0, 15 - 3 * abs(guess["fg3a"] - actual["fg3a"]))
+    
+    # Bonus points for perfect predictions
+    if guess["points"] == actual["points"]: points += 5
+    if guess["fgm"] == actual["fgm"] and guess["fga"] == actual["fga"]: points += 10
+    if guess["fg3m"] == actual["fg3m"] and guess["fg3a"] == actual["fg3a"]: points += 10
+    
     return points
 
-# Read the actual stats from a file or an API
-actual_stats = {
-    "points": 20,
-    "rebounds": 10,
-    "assists": 5
-}
-
-# Get the current game date
-current_game_date = datetime.now().strftime("%Y-%m-%d")
-
-# Calculate points if not already calculated for the current game
-guesses_df = read_sheet("guesses")
-current_game_guesses = guesses_df[guesses_df['game_date'] == current_game_date]
-points_df = read_sheet("points")
-for _, guess in current_game_guesses.iterrows():
-    name = guess['name']
-    guess_dict = {
-        "points": guess['points'] if guess['points'] is not None else 0,
-        "rebounds": guess['rebounds'] if guess['rebounds'] is not None else 0,
-        "assists": guess['assists'] if guess['assists'] is not None else 0
+# Read the actual stats from the game log
+def get_actual_stats(game_date, gamelog_stats):
+    game_stats = gamelog_stats[gamelog_stats['GAME_DATE'] == game_date].iloc[0]
+    return {
+        "points": game_stats['PTS'],
+        "rebounds": game_stats['REB'],
+        "assists": game_stats['AST'],
+        "steals": game_stats['STL'],
+        "blocks": game_stats['BLK'],
+        "fgm": game_stats['FGM'],
+        "fga": game_stats['FGA'],
+        "fg3m": game_stats['FG3M'],
+        "fg3a": game_stats['FG3A']
     }
-    points = calculate_points(guess_dict, actual_stats)
-    new_point = pd.DataFrame({"game_date": [current_game_date], "name": [name], "points": [points]})
-    points_df = pd.concat([points_df, new_point], ignore_index=True)
-    write_sheet("points", points_df)
+    # Calculate points if not already calculated for played games
+    guesses_df = read_sheet("guesses")
+    points_df = read_sheet("points")
+
+    # Get list of played games from gamelog_stats
+    played_game_dates = gamelog_stats['GAME_DATE'].tolist()
+
+    # Get guesses for games that have been played but points haven't been calculated yet
+    for game_date in played_game_dates:
+        # Check if points already calculated for this game
+        if len(points_df[points_df['game_date'] == game_date]) == 0:
+            # Get guesses for this game
+            game_guesses = guesses_df[guesses_df['game_date'] == game_date]
+            
+            if not game_guesses.empty:
+                try:
+                    actual_stats = get_actual_stats(game_date, gamelog_stats)
+                    for _, guess in game_guesses.iterrows():
+                        name = guess['name']
+                        guess_dict = {
+                            "points": guess['points'],
+                            "rebounds": guess['rebounds'],
+                            "assists": guess['assists'],
+                            "steals": guess['steals'],
+                            "blocks": guess['blocks'],
+                            "fgm": guess['fgm'],
+                            "fga": guess['fga'],
+                            "fg3m": guess['fg3m'],
+                            "fg3a": guess['fg3a']
+                        }
+                        points = calculate_points(guess_dict, actual_stats)
+                        new_point = pd.DataFrame({
+                            "game_date": [game_date], 
+                            "name": [name], 
+                            "points": [points]
+                        })
+                        points_df = pd.concat([points_df, new_point], ignore_index=True)
+                    write_sheet("points", points_df)
+                except Exception as e:
+                    st.warning(f"Could not calculate points for game {game_date}: {str(e)}")
+
+# Update the display of guesses to show shooting stats
+st.subheader("חמשת האבדי-ניחושים האחרונים")
+last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
+st.write(f"Total number of guesses: {len(last_guesses)}")
+for _, guess in last_guesses.iterrows():
+    st.write(
+        f"**{guess['name']}**: "
+        f"PTS: {guess['points']}, "
+        f"REB: {guess['rebounds']}, "
+        f"AST: {guess['assists']}, "
+        f"STL: {guess['steals']}, "
+        f"BLK: {guess['blocks']}, "
+        f"FG: {guess['fgm']}/{guess['fga']}, "
+        f"3P: {guess['fg3m']}/{guess['fg3a']}"
+    )
+    st.markdown("---")
 
 # Aggregate total points for each guesser
 total_points_df = points_df.groupby('name')['points'].sum().reset_index()
