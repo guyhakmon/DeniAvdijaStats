@@ -445,11 +445,6 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
     new_name = st.text_input("Or add a new name")
 
     if new_name:
-        if new_name not in names:
-            names.append(new_name)
-            new_name_df = pd.DataFrame({"name": [new_name]})
-            names_df = pd.concat([names_df, new_name_df], ignore_index=True)
-            write_sheet("names", names_df)
         selected_name = new_name
 
     name = selected_name
@@ -488,6 +483,11 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
                     "fg3a": [guessed_fg3a]
                 })
                 guesses_df = new_guess
+                if new_name:
+                    if new_name not in names:
+                        new_name_df = pd.DataFrame({"name": [new_name]})
+                        names_df = new_name_df
+                        write_sheet("names", names_df)
                 write_sheet("guesses", guesses_df)
                 st.success("Your guess has been saved!")
 
