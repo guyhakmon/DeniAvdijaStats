@@ -279,17 +279,53 @@ st.subheader("תוצאות האבדי-מנחשים של המשחק האחרון"
 
 # Fetch points data from Google Sheets
 points_df = read_sheet("points")
-points_data = points_df.set_index('game_date').to_dict('index')
-
 # Get the last game date
-last_game_date_str = pd.to_datetime(last_game_stats['GAME_DATE']).strftime("%Y-%m-%d")
-
+last_game_date_str = pd.to_datetime(last_game_stats['GAME_DATE']).strftime("%b %d, %Y").upper()
+# Filter points for the last game
+last_game_points = points_df[points_df['game_date'] == last_game_date_str]
 # Display points for each guesser for the last game
-if last_game_date_str in points_data:
-    for name, points in points_data[last_game_date_str].items():
-        st.write(f"Name: {name}, Points Scored: {points}")
+if not last_game_points.empty:
+    # Create a DataFrame with formatted columns
+    display_df = last_game_points[['name', 'points']].copy()
+    display_df.columns = ['Name', 'Points Scored']
+    
+    # Sort by points in descending order
+    display_df = display_df.sort_values('Points Scored', ascending=False)
+    
+    # Add icons based on rank
+    def add_rank_icon(rank):
+        if rank == 0:
+            return '🏆'  # Gold trophy
+        elif rank == 1:
+            return '🥈'  # Silver medal
+        elif rank == 2:
+            return '🥉'  # Bronze medal
+        else:
+            return '💩'  # Poop emoji
+            
+    display_df['Rank'] = [add_rank_icon(i) for i in range(len(display_df))]
+    
+    # Reorder columns to show rank first
+    display_df = display_df[['Rank', 'Name', 'Points Scored']]
+    
+    # Add styling
+    st.markdown("""
+        <style>
+        .dataframe {
+            font-size: 16px !important;
+            text-align: left !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    # Display as a styled table
+    st.dataframe(
+        display_df,
+        hide_index=True,
+        use_container_width=True
+    )
 else:
-    st.write("No points data available for the last game.")
+    st.info("No points data available for the last game.")
 
 # Format the search keywords for the highlights video
 search_keywords = f"Deni Avdija {last_game_date}"
@@ -584,11 +620,6 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
                         write_sheet("names", names_df)
                 write_sheet("guesses", guesses_df)
                 st.success("Your guess has been saved!")
-
-# Display Last 5 Guesses
-st.subheader("חמשת האבדי-ניחושים האחרונים")
-guesses_df = read_sheet("guesses")
-last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
 
 # Update the display of guesses to show shooting stats
 st.subheader("חמשת האבדי-ניחושים האחרונים")
