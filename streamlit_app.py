@@ -94,6 +94,89 @@ def write_sheet(sheet_name, data):
     # Clear the cache and reload the data
     st.cache_data.clear()
 
+
+# Function to calculate points based on the accuracy of the guess
+def calculate_points(guess, actual):
+    points = 0
+    # Basic stats (up to 10 points each)
+    points += max(0, 10 - abs(guess["points"] - actual["points"]))
+    points += max(0, 10 - abs(guess["rebounds"] - actual["rebounds"]))
+    points += max(0, 10 - abs(guess["assists"] - actual["assists"]))
+    points += max(0, 10 - abs(guess["steals"] - actual["steals"]))
+    points += max(0, 10 - abs(guess["blocks"] - actual["blocks"]))
+    
+    # Shooting stats (up to 15 points each)
+    points += max(0, 15 - 3 * abs(guess["fgm"] - actual["fgm"]))
+    points += max(0, 15 - 3 * abs(guess["fga"] - actual["fga"]))
+    points += max(0, 15 - 3 * abs(guess["fg3m"] - actual["fg3m"]))
+    points += max(0, 15 - 3 * abs(guess["fg3a"] - actual["fg3a"]))
+    
+    # Bonus points for perfect predictions
+    if guess["points"] == actual["points"]: points += 5
+    if guess["fgm"] == actual["fgm"] and guess["fga"] == actual["fga"]: points += 10
+    if guess["fg3m"] == actual["fg3m"] and guess["fg3a"] == actual["fg3a"]: points += 10
+    
+    return points
+
+# Read the actual stats from the game log
+def get_actual_stats(game_date, gamelog_stats):
+    game_stats = gamelog_stats[gamelog_stats['GAME_DATE'] == game_date].iloc[0]
+    return {
+        "points": game_stats['PTS'],
+        "rebounds": game_stats['REB'],
+        "assists": game_stats['AST'],
+        "steals": game_stats['STL'],
+        "blocks": game_stats['BLK'],
+        "fgm": game_stats['FGM'],
+        "fga": game_stats['FGA'],
+        "fg3m": game_stats['FG3M'],
+        "fg3a": game_stats['FG3A']
+    }
+def update_points_from_guesses(guesses_df, points_df, gamelog_stats):
+    # Get list of played games from gamelog_stats
+    played_game_dates = gamelog_stats['GAME_DATE'].tolist()
+
+    # Get guesses for games that have been played but points haven't been calculated yet
+    for game_date in played_game_dates:
+        # Check if points already calculated for this game
+        if len(points_df[points_df['game_date'] == game_date]) == 0:
+            # Get guesses for this game
+            game_guesses = guesses_df[guesses_df['game_date'] == game_date]
+            
+            if not game_guesses.empty:
+                try:
+                    actual_stats = get_actual_stats(game_date, gamelog_stats)
+                    for _, guess in game_guesses.iterrows():
+                        name = guess['name']
+                        guess_dict = {
+                            "points": guess['points'],
+                            "rebounds": guess['rebounds'],
+                            "assists": guess['assists'],
+                            "steals": guess['steals'],
+                            "blocks": guess['blocks'],
+                            "fgm": guess['fgm'],
+                            "fga": guess['fga'],
+                            "fg3m": guess['fg3m'],
+                            "fg3a": guess['fg3a']
+                        }
+                        points = calculate_points(guess_dict, actual_stats)
+                        new_point = pd.DataFrame({
+                            "game_date": [game_date], 
+                            "name": [name], 
+                            "points": [points]
+                        })
+                        points_df = pd.concat([points_df, new_point], ignore_index=True)
+                    write_sheet("points", points_df)
+                except Exception as e:
+                    st.warning(f"Could not calculate points for game {game_date}: {str(e)}")
+                    
+    return points_df
+
+# Calculate points if not already calculated for played games
+guesses_df = read_sheet("guesses")
+points_df = read_sheet("points")
+points_df = update_points_from_guesses(guesses_df, points_df, gamelog_stats)
+
 # Create a new reaction for each new game
 game_date_str = last_game_date.replace(" ", "_")
 reactions_df = read_sheet("reactions")
@@ -506,84 +589,6 @@ with st.expander("נחש את ביצועיו של דני במשחק האבדי-�
 st.subheader("חמשת האבדי-ניחושים האחרונים")
 guesses_df = read_sheet("guesses")
 last_guesses = guesses_df[guesses_df['game_date'] == next_game_date].tail(5)
-
-# Function to calculate points based on the accuracy of the guess
-def calculate_points(guess, actual):
-    points = 0
-    # Basic stats (up to 10 points each)
-    points += max(0, 10 - abs(guess["points"] - actual["points"]))
-    points += max(0, 10 - abs(guess["rebounds"] - actual["rebounds"]))
-    points += max(0, 10 - abs(guess["assists"] - actual["assists"]))
-    points += max(0, 10 - abs(guess["steals"] - actual["steals"]))
-    points += max(0, 10 - abs(guess["blocks"] - actual["blocks"]))
-    
-    # Shooting stats (up to 15 points each)
-    points += max(0, 15 - 3 * abs(guess["fgm"] - actual["fgm"]))
-    points += max(0, 15 - 3 * abs(guess["fga"] - actual["fga"]))
-    points += max(0, 15 - 3 * abs(guess["fg3m"] - actual["fg3m"]))
-    points += max(0, 15 - 3 * abs(guess["fg3a"] - actual["fg3a"]))
-    
-    # Bonus points for perfect predictions
-    if guess["points"] == actual["points"]: points += 5
-    if guess["fgm"] == actual["fgm"] and guess["fga"] == actual["fga"]: points += 10
-    if guess["fg3m"] == actual["fg3m"] and guess["fg3a"] == actual["fg3a"]: points += 10
-    
-    return points
-
-# Read the actual stats from the game log
-def get_actual_stats(game_date, gamelog_stats):
-    game_stats = gamelog_stats[gamelog_stats['GAME_DATE'] == game_date].iloc[0]
-    return {
-        "points": game_stats['PTS'],
-        "rebounds": game_stats['REB'],
-        "assists": game_stats['AST'],
-        "steals": game_stats['STL'],
-        "blocks": game_stats['BLK'],
-        "fgm": game_stats['FGM'],
-        "fga": game_stats['FGA'],
-        "fg3m": game_stats['FG3M'],
-        "fg3a": game_stats['FG3A']
-    }
-    # Calculate points if not already calculated for played games
-    guesses_df = read_sheet("guesses")
-    points_df = read_sheet("points")
-
-    # Get list of played games from gamelog_stats
-    played_game_dates = gamelog_stats['GAME_DATE'].tolist()
-
-    # Get guesses for games that have been played but points haven't been calculated yet
-    for game_date in played_game_dates:
-        # Check if points already calculated for this game
-        if len(points_df[points_df['game_date'] == game_date]) == 0:
-            # Get guesses for this game
-            game_guesses = guesses_df[guesses_df['game_date'] == game_date]
-            
-            if not game_guesses.empty:
-                try:
-                    actual_stats = get_actual_stats(game_date, gamelog_stats)
-                    for _, guess in game_guesses.iterrows():
-                        name = guess['name']
-                        guess_dict = {
-                            "points": guess['points'],
-                            "rebounds": guess['rebounds'],
-                            "assists": guess['assists'],
-                            "steals": guess['steals'],
-                            "blocks": guess['blocks'],
-                            "fgm": guess['fgm'],
-                            "fga": guess['fga'],
-                            "fg3m": guess['fg3m'],
-                            "fg3a": guess['fg3a']
-                        }
-                        points = calculate_points(guess_dict, actual_stats)
-                        new_point = pd.DataFrame({
-                            "game_date": [game_date], 
-                            "name": [name], 
-                            "points": [points]
-                        })
-                        points_df = pd.concat([points_df, new_point], ignore_index=True)
-                    write_sheet("points", points_df)
-                except Exception as e:
-                    st.warning(f"Could not calculate points for game {game_date}: {str(e)}")
 
 # Update the display of guesses to show shooting stats
 st.subheader("חמשת האבדי-ניחושים האחרונים")
