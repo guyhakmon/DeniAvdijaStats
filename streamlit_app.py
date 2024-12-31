@@ -368,7 +368,17 @@ st.subheader("אבדי-חיזוי של ביצועיו של דני במשחק ה�
 
 # Get the opponent team ID
 opponent_team_name = next_game_details['VISITOR_TEAM_NAME'] if next_game_details['HOME_TEAM_NAME'] == 'Portland (POR)' else next_game_details['HOME_TEAM_NAME']
-opponent_team = teams.find_teams_by_full_name(opponent_team_name)[0]
+st.write(f"Opponent Team: {opponent_team_name}")
+
+# Handle special team name cases
+team_name_mapping = {
+    'L.A. Lakers': 'Los Angeles Lakers',
+    'L.A. Clippers': 'Los Angeles Clippers',
+    'LA Lakers': 'Los Angeles Lakers',
+    'LA Clippers': 'Los Angeles Clippers'
+}
+search_team_name = team_name_mapping.get(opponent_team_name, opponent_team_name)
+opponent_team = teams.find_teams_by_full_name(search_team_name)[0]
 opponent_team_id = opponent_team['id']
 
 # Get the opponent team's defensive stats for the current season
