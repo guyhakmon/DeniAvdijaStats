@@ -648,8 +648,46 @@ else:
 
 # Display the total points for each guesser
 st.subheader("אבדי-נקודות סופיות לכל מנחש")
-for _, row in total_points_df.iterrows():
-    st.write(f"שם: {row['name']}, סך הכל נקודות: {row['total_points']}")
+
+# Sort total points in descending order
+total_points_df = total_points_df.sort_values('total_points', ascending=False)
+
+# Add rank icons and create display DataFrame 
+display_df = total_points_df.copy()
+display_df.columns = ['Name', 'Total Points']
+
+# Add rank icons based on position
+def add_rank_icon(rank):
+    if rank == 0:
+        return '👑'  # Crown for 1st
+    elif rank == 1:
+        return '🥈'  # Silver medal
+    elif rank == 2:
+        return '🥉'  # Bronze medal
+    else:
+        return '💩'  # Poop emoji for others
+
+display_df['Rank'] = [add_rank_icon(i) for i in range(len(display_df))]
+
+# Reorder columns
+display_df = display_df[['Rank', 'Name', 'Total Points']]
+
+# Add styling
+st.markdown("""
+    <style>
+    .dataframe {
+        font-size: 16px !important;
+        text-align: left !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Display as a styled table
+st.dataframe(
+    display_df,
+    hide_index=True,
+    use_container_width=True
+)
 
 # Summarize stats
 st.write("אבדי-סיכום סטטיסטיקות קריירה")
