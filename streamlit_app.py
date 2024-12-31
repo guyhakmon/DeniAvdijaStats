@@ -367,7 +367,7 @@ next_game_date = next_game_details['GAME_DATE']
 st.subheader("אבדי-חיזוי של ביצועיו של דני במשחק האבדי-בא")
 
 # Get the opponent team ID
-opponent_team_name = next_game_details['VISITOR_TEAM_NAME'] if next_game_details['HOME_TEAM_NAME'] == 'Portland Trail Blazers' else next_game_details['HOME_TEAM_NAME']
+opponent_team_name = next_game_details['VISITOR_TEAM_NAME'] if next_game_details['HOME_TEAM_NAME'] == 'Portland (POR)' else next_game_details['HOME_TEAM_NAME']
 opponent_team = teams.find_teams_by_full_name(opponent_team_name)[0]
 opponent_team_id = opponent_team['id']
 
