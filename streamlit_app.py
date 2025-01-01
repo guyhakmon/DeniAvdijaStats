@@ -638,13 +638,60 @@ for _, guess in last_guesses.iterrows():
     )
     st.markdown("---")
 
-# Aggregate total points for each guesser
-total_points_df = points_df.groupby('name')['points'].sum().reset_index()
-total_points_df.columns = ['name', 'total_points']
-if not total_points_df.empty:
-    write_sheet("total_points", total_points_df)
-else:
-    st.warning("No total points data to write.")
+# Aggregate total points for each guesser from current points_df
+current_points = points_df.groupby('name')['points'].sum().reset_index()
+current_points.columns = ['name', 'total_points']
+try:
+    # Read existing total points
+    existing_points = read_sheet("total_points")
+    
+    # Get most recent game date from gamelog_stats
+    last_played_game_date = pd.to_datetime(gamelog_stats['GAME_DATE'].iloc[0]).strftime("%Y-%m-%d")
+    
+    # Check if we need to update points based on last_game_date_updated
+    needs_update = True
+    if not existing_points.empty and 'last_game_date_updated' in existing_points.columns:
+        last_updated = existing_points['last_game_date_updated'].iloc[0]
+        if last_updated == last_played_game_date:
+            needs_update = False
+    
+    if needs_update:
+        if not existing_points.empty:
+            # Create a set of all unique names
+            all_names = set(current_points['name']).union(set(existing_points['name']))
+            
+            # Initialize the final DataFrame with all names
+            total_points_df = pd.DataFrame({'name': list(all_names)})
+            
+            # Merge with current points
+            total_points_df = total_points_df.merge(current_points, on='name', how='left')
+            # Merge with existing points
+            total_points_df = total_points_df.merge(existing_points, on='name', how='left', suffixes=('', '_old'))
+            
+            # Sum the points, treating NaN as 0
+            total_points_df['total_points'] = total_points_df['total_points'].fillna(0) + \
+                                            total_points_df['total_points_old'].fillna(0)
+            
+            # Add last_game_date_updated
+            total_points_df['last_game_date_updated'] = last_played_game_date
+            
+            # Keep only required columns
+            total_points_df = total_points_df[['name', 'total_points', 'last_game_date_updated']]
+        else:
+            total_points_df = current_points.copy()
+            total_points_df['last_game_date_updated'] = last_played_game_date
+        
+        # Create a new connection instance and update Google Sheets
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        conn.update(worksheet="total_points", data=total_points_df)
+    else:
+        total_points_df = existing_points
+
+except Exception as e:
+    st.warning(f"Could not read or update total points: {str(e)}")
+    # Create basic DataFrame if error occurs
+    total_points_df = current_points.copy()
+    total_points_df['last_game_date_updated'] = last_played_game_date
 
 # Display the total points for each guesser
 st.subheader("אבדי-נקודות סופיות לכל מנחש")
@@ -654,7 +701,7 @@ total_points_df = total_points_df.sort_values('total_points', ascending=False)
 
 # Add rank icons and create display DataFrame 
 display_df = total_points_df.copy()
-display_df.columns = ['Name', 'Total Points']
+display_df.columns = ['Name', 'Total Points', 'Last Updated']
 
 # Add rank icons based on position
 def add_rank_icon(rank):
